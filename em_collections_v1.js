@@ -153,181 +153,272 @@ function getNextSiblingWithClass(element, className) {
 /**** */
 
 
-function editCollectionFormSubmit() {
+// function editCollectionFormSubmit() {
+//     // unbind webflow form handling (keep this if you only want to affect specific forms)
+//     $(document).off('submit');
+//     const em_collectionId = event.target.getAttribute("em-collectionId");
+//     const selector = "#wf-form-Edit-Collection[em-collectionId=\"" + em_collectionId + "\"]";
+//     const form = document.querySelector(selector);
+//     if (form) {
+//         /* Any form on the page */
+//         form.submit(function (e) {
+//             e.preventDefault();
+
+//             const $form = form; // The submitted form
+//             const $submit = $('[type=submit]', $form); // Submit button of form
+//             const buttonText = $submit.val(); // Original button text
+//             const buttonWaitingText = $submit.attr('data-wait'); // Waiting button text value
+//             const formMethodType = $form.attr('method'); // Form method (where it submits to)
+//             const formActionURL = $form.attr('action'); // Form action (GET/POST)
+//             const formRedirect = $form.attr('data-redirect'); // Form redirect location
+//             const formDataString = $form.serialize(); // Form data
+//             console.log(formDataString);
+
+//             const formDataObj = formDataString.split('&').reduce((acc, keyValue) => {
+//                 const [key, value] = keyValue.split('=');
+//                 acc[key] = decodeURIComponent(value); // Use decodeURIComponent to handle special characters, if any
+//                 return acc;
+//             }, {});
+
+//             console.log(formDataObj);
+//             debugger;
+//             const collectionId = $form.attr('em-collectionId');
+//             const finalActionURL = formActionURL + '/' + collectionId;
+
+//             let outsetaJWT = getOutsetaKey();
+
+//             // Log headers before the request
+//             const headersData = {
+//                 'Authorization': 'Bearer ' + outsetaJWT
+//             };
+//             console.log("Headers for the request:", headersData);
+//             console.log(JSON.stringify({
+//                 name: formDataObj.name,
+//                 description: formDataObj.description
+//             }));
+
+
+//             $.ajax(finalActionURL, {
+//                 data: JSON.stringify({
+//                     "name": formDataObj.name,
+//                     "description": formDataObj.description
+//                 }),
+//                 contentType: 'application/json',
+//                 type: formMethodType,
+//                 headers: headersData
+//             })
+//                 .done((res) => {
+
+//                     $form
+//                         .css("display", "none") // optional hiding of form
+//                         .siblings('.w-form-done').show() // Show success
+//                         .siblings('.w-form-fail').hide(); // Hide failure
+
+//                     // If form redirect setting set, then use this and prevent any other actions
+//                     if (formRedirect) {
+//                         setTimeout(function () {
+//                             console.log("timeout done");
+//                             window.location = formRedirect;
+//                             return;
+//                         }, 2000); //delay is in milliseconds 
+//                     }
+//                 })
+//                 .fail((res) => {
+//                     $form
+//                         .siblings('.w-form-done').hide() // Hide success
+//                         .siblings('.w-form-fail').show(); // show failure
+//                 })
+//                 .always(() => {
+//                     // Reset text
+//                     $submit.val(buttonText);
+//                 });
+
+//         });
+//     }
+
+// }
+
+// function deleteCollectionFormSubmit() {
+//     // unbind webflow form handling (keep this if you only want to affect specific forms)
+//     $(document).off('submit');
+
+//     const em_collectionId = event.target.getAttribute("em-collectionId");
+//     const selector = "#wf-form-Delete-Collection[em-collectionId=\"" + em_collectionId + "\"]";
+//     const form = document.querySelector(selector);
+
+//     if (form) {
+//         /* Any form on the page */
+//         form.submit(function (e) {
+//             e.preventDefault();
+
+//             const $form = form; // The submitted form
+//             const $submit = $('[type=submit]', $form); // Submit button of form
+//             const buttonText = $submit.val(); // Original button text
+//             const buttonWaitingText = $submit.attr('data-wait'); // Waiting button text value
+//             const formMethodType = "Delete"; //$form.attr('method'); // Form method (where it submits to)
+//             const formActionURL = $form.attr('action'); // Form action (GET/POST)
+//             const formRedirect = $form.attr('data-redirect'); // Form redirect location
+//             const formDataString = $form.serialize(); // Form data
+//             console.log(formDataString);
+
+//             const formDataObj = formDataString.split('&').reduce((acc, keyValue) => {
+//                 const [key, value] = keyValue.split('=');
+//                 acc[key] = decodeURIComponent(value); // Use decodeURIComponent to handle special characters, if any
+//                 return acc;
+//             }, {});
+
+//             console.log(formDataObj);
+//             debugger;
+//             const collectionId = $form.attr('em-collectionId');
+//             const finalActionURL = formActionURL + '/' + collectionId;
+
+//             let outsetaJWT = getOutsetaKey();
+
+//             // Log headers before the request
+//             const headersData = {
+//                 'Authorization': 'Bearer ' + outsetaJWT
+//             };
+//             console.log("Headers for the request:", headersData);
+//             console.log(JSON.stringify({
+//                 name: formDataObj.name,
+//                 description: formDataObj.description
+//             }));
+
+
+//             $.ajax(finalActionURL, {
+//                 data: JSON.stringify({
+//                     "name": formDataObj.name,
+//                     "description": formDataObj.description
+//                 }),
+//                 contentType: 'application/json',
+//                 type: formMethodType,
+//                 headers: headersData
+//             })
+//                 .done((res) => {
+
+//                     $form
+//                         .hide() // optional hiding of form
+//                         .siblings('.w-form-done').show() // Show success
+//                         .siblings('.w-form-fail').hide(); // Hide failure
+
+//                     // If form redirect setting set, then use this and prevent any other actions
+//                     if (formRedirect) {
+//                         setTimeout(function () {
+//                             console.log("timeout done");
+//                             window.location = formRedirect;
+//                             return;
+//                         }, 2000); //delay is in milliseconds 
+//                     }
+//                 })
+//                 .fail((res) => {
+//                     $form
+//                         .siblings('.w-form-done').hide() // Hide success
+//                         .siblings('.w-form-fail').show(); // show failure
+//                 })
+//                 .always(() => {
+//                     // Reset text
+//                     $submit.val(buttonText);
+//                 });
+
+//         });
+//     }
+
+// }
+
+
+Webflow.push(function () {
     // unbind webflow form handling (keep this if you only want to affect specific forms)
     $(document).off('submit');
-    const em_collectionId = event.target.getAttribute("em-collectionId");
-    const selector = "#wf-form-Edit-Collection[em-collectionId=\"" + em_collectionId + "\"]";
-    const form = document.querySelector(selector);
-    if (form) {
-        /* Any form on the page */
-        form.submit(function (e) {
-            e.preventDefault();
 
-            const $form = form; // The submitted form
-            const $submit = $('[type=submit]', $form); // Submit button of form
-            const buttonText = $submit.val(); // Original button text
-            const buttonWaitingText = $submit.attr('data-wait'); // Waiting button text value
-            const formMethodType = $form.attr('method'); // Form method (where it submits to)
-            const formActionURL = $form.attr('action'); // Form action (GET/POST)
-            const formRedirect = $form.attr('data-redirect'); // Form redirect location
-            const formDataString = $form.serialize(); // Form data
-            console.log(formDataString);
+    /* Any form on the page */
+    $('form').submit(function (e) {
+        e.preventDefault();
 
-            const formDataObj = formDataString.split('&').reduce((acc, keyValue) => {
-                const [key, value] = keyValue.split('=');
-                acc[key] = decodeURIComponent(value); // Use decodeURIComponent to handle special characters, if any
-                return acc;
-            }, {});
-
-            console.log(formDataObj);
-            debugger;
-            const collectionId = $form.attr('em-collectionId');
-            const finalActionURL = formActionURL + '/' + collectionId;
-
-            let outsetaJWT = getOutsetaKey();
-
-            // Log headers before the request
-            const headersData = {
-                'Authorization': 'Bearer ' + outsetaJWT
-            };
-            console.log("Headers for the request:", headersData);
-            console.log(JSON.stringify({
-                name: formDataObj.name,
-                description: formDataObj.description
-            }));
+        const $form = $(this); // The submitted form
+        const $submit = $('[type=submit]', $form); // Submit button of form
+        const buttonText = $submit.val(); // Original button text
+        const buttonWaitingText = $submit.attr('data-wait'); // Waiting button text value
+        var formMethodType = $form.attr('method'); // Form method (where it submits to)
+        const formActionURL = $form.attr('action'); // Form action (GET/POST)
+        const formRedirect = $form.attr('data-redirect'); // Form redirect location
+        const formDataString = $form.serialize(); // Form data
+        console.log(formDataString);
 
 
-            $.ajax(finalActionURL, {
-                data: JSON.stringify({
-                    "name": formDataObj.name,
-                    "description": formDataObj.description
-                }),
-                contentType: 'application/json',
-                type: formMethodType,
-                headers: headersData
-            })
-                .done((res) => {
+        const formDataObj = formDataString.split('&').reduce((acc, keyValue) => {
+            const [key, value] = keyValue.split('=');
+            acc[key] = decodeURIComponent(value); // Use decodeURIComponent to handle special characters, if any
+            return acc;
+        }, {});
 
-                    $form
-                        .css("display", "none") // optional hiding of form
-                        .siblings('.w-form-done').show() // Show success
-                        .siblings('.w-form-fail').hide(); // Hide failure
+        console.log(formDataObj);
+        debugger;
+        const collectionId = $form.attr('em-collectionId');
+        const finalActionURL = formActionURL + '/' + collectionId;
 
-                    // If form redirect setting set, then use this and prevent any other actions
-                    if (formRedirect) {
-                        setTimeout(function () {
-                            console.log("timeout done");
-                            window.location = formRedirect;
-                            return;
-                        }, 2000); //delay is in milliseconds 
-                    }
-                })
-                .fail((res) => {
-                    $form
-                        .siblings('.w-form-done').hide() // Hide success
-                        .siblings('.w-form-fail').show(); // show failure
-                })
-                .always(() => {
-                    // Reset text
-                    $submit.val(buttonText);
-                });
+        let outsetaJWT = getOutsetaKey();
 
+        // Log headers before the request
+        const headersData = {
+            'Authorization': 'Bearer ' + outsetaJWT
+        };
+        console.log("Headers for the request:", headersData);
+        console.log(JSON.stringify({
+            name: formDataObj.name,
+            description: formDataObj.description
+        }));
+
+
+
+        var finalData = JSON.stringify({
+            "name": formDataObj.name,
+            "description": formDataObj.description
         });
-    }
 
-}
-
-function deleteCollectionFormSubmit() {
-    // unbind webflow form handling (keep this if you only want to affect specific forms)
-    $(document).off('submit');
-
-    const em_collectionId = event.target.getAttribute("em-collectionId");
-    const selector = "#wf-form-Delete-Collection[em-collectionId=\"" + em_collectionId + "\"]";
-    const form = document.querySelector(selector);
-
-    if (form) {
-        /* Any form on the page */
-        form.submit(function (e) {
-            e.preventDefault();
-
-            const $form = form; // The submitted form
-            const $submit = $('[type=submit]', $form); // Submit button of form
-            const buttonText = $submit.val(); // Original button text
-            const buttonWaitingText = $submit.attr('data-wait'); // Waiting button text value
-            const formMethodType = "Delete"; //$form.attr('method'); // Form method (where it submits to)
-            const formActionURL = $form.attr('action'); // Form action (GET/POST)
-            const formRedirect = $form.attr('data-redirect'); // Form redirect location
-            const formDataString = $form.serialize(); // Form data
-            console.log(formDataString);
-
-            const formDataObj = formDataString.split('&').reduce((acc, keyValue) => {
-                const [key, value] = keyValue.split('=');
-                acc[key] = decodeURIComponent(value); // Use decodeURIComponent to handle special characters, if any
-                return acc;
-            }, {});
-
-            console.log(formDataObj);
-            debugger;
-            const collectionId = $form.attr('em-collectionId');
-            const finalActionURL = formActionURL + '/' + collectionId;
-
-            let outsetaJWT = getOutsetaKey();
-
-            // Log headers before the request
-            const headersData = {
-                'Authorization': 'Bearer ' + outsetaJWT
-            };
-            console.log("Headers for the request:", headersData);
-            console.log(JSON.stringify({
-                name: formDataObj.name,
-                description: formDataObj.description
-            }));
+        // change the formMethodType if its delete
+        if ($form.getAttribute("id") === "wf-form-Delete-Collection") {
+            formMethodType = "Delete";
+            finalData = {};
+        }
 
 
-            $.ajax(finalActionURL, {
-                data: JSON.stringify({
-                    "name": formDataObj.name,
-                    "description": formDataObj.description
-                }),
-                contentType: 'application/json',
-                type: formMethodType,
-                headers: headersData
+        $.ajax(finalActionURL, {
+            data: finalData,
+            contentType: 'application/json',
+            type: formMethodType,
+            headers: headersData
+        })
+            .done((res) => {
+
+                $form
+                    .css("display", "none") // optional hiding of form
+                    .siblings('.w-form-done').show() // Show success
+                    .siblings('.w-form-fail').hide(); // Hide failure
+
+                // If form redirect setting set, then use this and prevent any other actions
+                if (formRedirect) {
+                    setTimeout(function () {
+                        console.log("timeout done");
+                        window.location = formRedirect;
+                        return;
+                    }, 2000); //delay is in milliseconds 
+                }
             })
-                .done((res) => {
+            .fail((res) => {
+                $form
+                    .siblings('.w-form-done').hide() // Hide success
+                    .siblings('.w-form-fail').show(); // show failure
+            })
+            .always(() => {
+                // Reset text
+                $submit.val(buttonText);
+            });
 
-                    $form
-                        .hide() // optional hiding of form
-                        .siblings('.w-form-done').show() // Show success
-                        .siblings('.w-form-fail').hide(); // Hide failure
+    });
+});
 
-                    // If form redirect setting set, then use this and prevent any other actions
-                    if (formRedirect) {
-                        setTimeout(function () {
-                            console.log("timeout done");
-                            window.location = formRedirect;
-                            return;
-                        }, 2000); //delay is in milliseconds 
-                    }
-                })
-                .fail((res) => {
-                    $form
-                        .siblings('.w-form-done').hide() // Hide success
-                        .siblings('.w-form-fail').show(); // show failure
-                })
-                .always(() => {
-                    // Reset text
-                    $submit.val(buttonText);
-                });
-
-        });
-    }
-
-}
-
-
-Webflow.push(editCollectionFormSubmit);
-Webflow.push(deleteCollectionFormSubmit);
+//Webflow.push(editCollectionFormSubmit);
+//Webflow.push(deleteCollectionFormSubmit);
 
 
 
