@@ -11,9 +11,20 @@ const bearerKey = getOutsetaKey();
 if (!bearerKey) {
     console.log('User is not logged in');
 }
-
 // Use bearerKey here
 //console.log("Bearer Key inside function:", bearerKey);
+
+// Check if the contentTableDiv has a child element with class "w-dyn-empty"
+if (contentTableDiv.find(".w-dyn-empty").length > 0) {
+    // If it has the class, show the contentSectionDiv div and hide the contentTableDiv
+    contentTableDiv.hide();
+    contentSectionDiv.show();
+} else {
+    // If it doesn't have the class, show the contentTableDiv and hide the contentSectionDiv div
+    contentTableDiv.show();
+    contentSectionDiv.hide();
+}
+
 
 /****Utility functions starts****/
 function getOutsetaKey() {
@@ -33,7 +44,7 @@ function getNextSiblingWithClass(element, className) {
 
 /*** functions invoked on page load */
 // attaching listeners to all delete collection buttons
-(function clickMe() {
+(function clickDeleteCollectionButton() {
     const appButtons = document.getElementsByClassName("delete-coll-button");
     for (let appButton of appButtons) {
         // const appButton = document.getElementById("App-Button1");
@@ -67,7 +78,7 @@ function getNextSiblingWithClass(element, className) {
 })();
 
 // attaching listeners to all edit collection buttons
-(function clickMe() {
+(function clickEditCollectionButton() {
     const appButtons = document.getElementsByClassName("edit-coll-button");
     for (let appButton of appButtons) {
         // const appButton = document.getElementById("App-Button1");
@@ -102,7 +113,7 @@ function getNextSiblingWithClass(element, className) {
 })();
 
 // attaching listeners to all modal input boxes for delete collection
-(function keyChange() {
+(function keyChangeDeleteCollectionInput() {
     const inputTexts = document.getElementsByClassName("delete-collection-input");
 
     for (let inputEl of inputTexts) {
@@ -133,23 +144,6 @@ function getNextSiblingWithClass(element, className) {
     }
 })();
 /**** */
-
-
-// Check if the contentTableDiv has a child element with class "w-dyn-empty"
-if (contentTableDiv.find(".w-dyn-empty").length > 0) {
-    // If it has the class, show the contentSectionDiv div and hide the contentTableDiv
-    contentTableDiv.hide();
-    contentSectionDiv.show();
-} else {
-    // If it doesn't have the class, show the contentTableDiv and hide the contentSectionDiv div
-    contentTableDiv.show();
-    contentSectionDiv.hide();
-}
-
-
-
-
-
 
 
 
