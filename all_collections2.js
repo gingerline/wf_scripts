@@ -1,29 +1,20 @@
 
 const Webflow = window.Webflow || [];
 
-// Get references to both divs
-const contentTableDiv = $("#content-mid-table"); // for hiding and showing the div with collections table
-const contentSectionDiv = $("#content-mid-starter");// for hiding and showing the div with 0 items in collections table
 
 
 // default check
 const bearerKey = getOutsetaKey();
 if (!bearerKey) {
     console.log('User is not logged in');
+    window.location = '/signup';
+}
+else {
+    console.log('BearerKey is available');
 }
 // Use bearerKey here
 //console.log("Bearer Key inside function:", bearerKey);
 
-// Check if the contentTableDiv has a child element with class "w-dyn-empty"
-if (contentTableDiv.find(".w-dyn-empty").length > 0) {
-    // If it has the class, show the contentSectionDiv div and hide the contentTableDiv
-    contentTableDiv.hide();
-    contentSectionDiv.show();
-} else {
-    // If it doesn't have the class, show the contentTableDiv and hide the contentSectionDiv div
-    contentTableDiv.show();
-    contentSectionDiv.hide();
-}
 
 
 /****Utility functions starts****/
@@ -43,6 +34,22 @@ function getNextSiblingWithClass(element, className) {
 /****Utility functions ends****/
 
 /*** functions invoked on page load */
+(function initLoad() {
+    // Get references to both divs
+    const contentTableDiv = $("#content-mid-table"); // for hiding and showing the div with collections table
+    const contentSectionDiv = $("#content-mid-starter");// for hiding and showing the div with 0 items in collections table
+
+    // Check if the contentTableDiv has a child element with class "w-dyn-empty"
+    if (contentTableDiv.find(".w-dyn-empty").length > 0) {
+        // If it has the class, show the contentSectionDiv div and hide the contentTableDiv
+        contentTableDiv.hide();
+        contentSectionDiv.show();
+    } else {
+        // If it doesn't have the class, show the contentTableDiv and hide the contentSectionDiv div
+        contentTableDiv.show();
+        contentSectionDiv.hide();
+    }
+})();
 // attaching listeners to all delete collection buttons
 (function clickDeleteCollectionButton() {
     const appButtons = document.getElementsByClassName("delete-coll-button");
@@ -146,8 +153,7 @@ function getNextSiblingWithClass(element, className) {
 /**** */
 
 
-
-Webflow.push(function () {
+function editCollectionFormSubmit() {
     // unbind webflow form handling (keep this if you only want to affect specific forms)
     $(document).off('submit');
 
@@ -225,7 +231,10 @@ Webflow.push(function () {
             });
 
     });
-});
+}
+
+
+Webflow.push(editCollectionFormSubmit);
 
 
 
