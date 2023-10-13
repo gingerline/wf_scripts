@@ -1,5 +1,5 @@
 
-const Webflow = Webflow || [];
+const Webflow = window.Webflow || [];
 
 // Get references to both divs
 const contentTableDiv = $("#content-mid-table"); // for hiding and showing the div with collections table
