@@ -376,8 +376,8 @@ Webflow.push(function () {
         });
 
         // change the formMethodType if its delete
-        if ($form.getAttribute("id") === "wf-form-Delete-Collection") {
-            formMethodType = "Delete";
+        if ($form.attr("id") === "wf-form-Delete-Collection") {
+            formMethodType = "delete";
             finalData = {};
         }
 
@@ -391,7 +391,7 @@ Webflow.push(function () {
             .done((res) => {
 
                 $form
-                    .css("display", "none") // optional hiding of form
+                    .hide() // optional hiding of form
                     .siblings('.w-form-done').show() // Show success
                     .siblings('.w-form-fail').hide(); // Hide failure
 

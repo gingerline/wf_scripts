@@ -376,7 +376,7 @@ Webflow.push(function () {
         });
 
         // change the formMethodType if its delete
-        if ($form.getAttribute("id") === "wf-form-Delete-Collection") {
+        if ($form.attr("id") === "wf-form-Delete-Collection") {
             formMethodType = "Delete";
             finalData = {};
         }
