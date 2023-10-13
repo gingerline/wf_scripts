@@ -59,7 +59,7 @@ function getNextSiblingWithClass(element, className) {
             const em_collectionId = event.target.getAttribute("em-collectionId");
             const selector = "#wf-form-Delete-Collection[em-collectionId=\"" + em_collectionId + "\"]";
             const form = document.querySelector(selector);
-            if (form.style.display === "none" || form.style.display === "") {
+            if (form) {
                 // Reset the inputs in the form
                 form.reset();
 
@@ -94,7 +94,7 @@ function getNextSiblingWithClass(element, className) {
             const em_collectionId = event.target.getAttribute("em-collectionId");
             const selector = "#wf-form-Edit-Collection[em-collectionId=\"" + em_collectionId + "\"]";
             const form = document.querySelector(selector);
-            if (form.style.display === "none") {
+            if (form) {
                 // Reset the inputs in the form
                 form.reset();
 
