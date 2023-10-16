@@ -264,6 +264,8 @@ Webflow.push(function () {
                         return;
                     }, 2000); //delay is in milliseconds 
                 }
+                // Call the reloadData function after a successful submission
+                reloadData();
             })
             .fail((res) => {
                 $form
@@ -278,7 +280,10 @@ Webflow.push(function () {
     });
 });
 
-window.addEventListener("DOMContentLoaded", async () => {
+
+window.addEventListener("DOMContentLoaded", reloadData);
+
+async function reloadData() {
     // global constants
     const API_URL = "https://test-emno.fly.dev/collections";
     debugger;
@@ -399,4 +404,4 @@ window.addEventListener("DOMContentLoaded", async () => {
         // movieGrid.style.opacity = "100%";
         document.body.style.overflow = "auto";
     }, 1500);
-});
+};
