@@ -295,7 +295,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         clonedElement.find(".action-link").attr('em-collectionName', em_coll.name);
 
         // also append the description if it the edit button.
-        clonedElement.querySelector('.action-link.edit-coll-button').attr('em-collectionDescription', em_coll.description);
+        clonedElement.find('.action-link.edit-coll-button').attr('em-collectionDescription', em_coll.description);
 
         // Show the cloned element (assuming it was hidden before)
         clonedElement.show();
