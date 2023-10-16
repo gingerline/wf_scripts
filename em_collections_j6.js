@@ -104,28 +104,7 @@ function openEditPopupClickHandler(event) {
     const em_collectionName = elem.getAttribute("em-collectionName");
     const em_collectionId = elem.getAttribute("em-collectionId");
     const em_collectionDescription = elem.getAttribute("em-collectionDescription");
-    const editModal = document.getElementById("delete-popup");
-    if (editModal) {
-
-        editModal.classList.add('add-animation');
-        editModal.style.display = "block";
-        editModal.style.opacity = "100%";
-    }
-
-    // Find the input element with the name attribute equal to "name"
-    var nameInput = editModal.querySelector('input[name="name"]');
-    // Check if the input element exists before setting its value
-    if (nameInput) {
-        nameInput.value = em_collectionName;
-    }
-
-    // Find the textarea element with the name attribute equal to "description" within the form
-    var textarea = editModal.querySelector('textarea[name="description"]');
-    // Check if the textarea element exists within the form
-    if (textarea && em_collectionDescription) {
-        // Set the value of the textarea to "abc"
-        textarea.value = em_collectionDescription;
-    }
+    const editModal = document.getElementById("edit-popup");
 
 
 
@@ -149,6 +128,26 @@ function openEditPopupClickHandler(event) {
             errorDiv.style.display = "none";
         }
     }
+
+
+    // Find the input element with the name attribute equal to "name"
+    var nameInput = editModal.querySelector('input[name="name"]');
+    // Check if the input element exists before setting its value
+    if (nameInput) {
+        nameInput.value = em_collectionName;
+    }
+
+    // Find the textarea element with the name attribute equal to "description" within the form
+    var textarea = editModal.querySelector('textarea[name="description"]');
+    // Check if the textarea element exists within the form
+    if (textarea && em_collectionDescription) {
+        // Set the value of the textarea to "abc"
+        textarea.value = em_collectionDescription;
+    }
+
+    editModal.classList.add('add-animation');
+    editModal.style.display = "block";
+    editModal.style.opacity = "100%";
 
     // finally close the dropdown menu
     openDropdownClickHandler(event);
@@ -187,6 +186,97 @@ let outsetaJWT = getOutsetaKey();
 const headersData = {
     'Authorization': 'Bearer ' + outsetaJWT
 };
+
+Webflow.push(function () {
+    // unbind webflow form handling (keep this if you only want to affect specific forms)
+    $(document).off('submit');
+
+    /* Any form on the page */
+    $('form').submit(function (e) {
+        e.preventDefault();
+
+        const $form = $(this); // The submitted form
+        const $submit = $('[type=submit]', $form); // Submit button of form
+        const buttonText = $submit.val(); // Original button text
+        const buttonWaitingText = $submit.attr('data-wait'); // Waiting button text value
+        var formMethodType = $form.attr('method'); // Form method (where it submits to)
+        const formActionURL = $form.attr('action'); // Form action (GET/POST)
+        const formRedirect = $form.attr('data-redirect'); // Form redirect location
+        const formDataString = $form.serialize(); // Form data
+        console.log(formDataString);
+
+
+        const formDataObj = formDataString.split('&').reduce((acc, keyValue) => {
+            const [key, value] = keyValue.split('=');
+            acc[key] = decodeURIComponent(value); // Use decodeURIComponent to handle special characters, if any
+            return acc;
+        }, {});
+
+        console.log(formDataObj);
+        debugger;
+        const collectionId = $form.attr('em-collectionId');
+        const finalActionURL = formActionURL + '/' + collectionId;
+
+        let outsetaJWT = getOutsetaKey();
+
+        // Log headers before the request
+        const headersData = {
+            'Authorization': 'Bearer ' + outsetaJWT
+        };
+        console.log("Headers for the request:", headersData);
+        console.log(JSON.stringify({
+            name: formDataObj.name,
+            description: formDataObj.description
+        }));
+
+
+
+        var finalData = JSON.stringify({
+            "name": formDataObj.name,
+            "description": formDataObj.description
+        });
+
+        // change the formMethodType if its delete
+        if ($form.attr("id") === "wf-form-Delete-Collection") {
+            formMethodType = "delete";
+            finalData = {};
+        }
+
+
+        $.ajax(finalActionURL, {
+            data: finalData,
+            contentType: 'application/json',
+            type: formMethodType,
+            headers: headersData
+        })
+            .done((res) => {
+
+                $form
+                    .hide() // optional hiding of form
+                    .siblings('.w-form-done').show() // Show success
+                    .siblings('.w-form-fail').hide(); // Hide failure
+
+                // If form redirect setting set, then use this and prevent any other actions
+                if (formRedirect) {
+                    setTimeout(function () {
+                        console.log("timeout done");
+                        window.location = formRedirect;
+                        return;
+                    }, 2000); //delay is in milliseconds 
+                }
+            })
+            .fail((res) => {
+                $form
+                    .siblings('.w-form-done').hide() // Hide success
+                    .siblings('.w-form-fail').show(); // show failure
+            })
+            .always(() => {
+                // Reset text
+                $submit.val(buttonText);
+            });
+
+    });
+});
 
 window.addEventListener("DOMContentLoaded", async () => {
     // global constants
@@ -265,7 +355,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         deleteMenu.on("click", openDeletePopupClickHandler);
 
         const editMenu = clonedElement.find(".edit-coll-button");
-        editMenu.on("click", openDeletePopupClickHandler);
+        editMenu.on("click", openEditPopupClickHandler);
 
         const dropdownTrigger = clonedElement.find(".dropdown-trigger");
         dropdownTrigger.on("click", openDropdownClickHandler);
