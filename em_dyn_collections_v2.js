@@ -1,15 +1,36 @@
+
+function getOutsetaKey() {
+    return sessionStorage.getItem("Outseta.nocode.accessToken");
+}
+let outsetaJWT = getOutsetaKey();
+// Log headers before the request
+const headersData = {
+    'Authorization': 'Bearer ' + outsetaJWT
+};
+
 window.addEventListener("DOMContentLoaded", async () => {
     // global constants
-    const API_URL = "https://jsonplaceholder.typicode.com/albums";
-
+    const API_URL = "https://test-emno.fly.dev/collections";
+    debugger;
     // functions
-    async function getData() {
+    async function fetchDataAndHandleResponse() {
         try {
-            const response = await fetch(API_URL);
-            const data = await response.json();
-            return data.results;
-        } catch (err) {
-            errorDetected();
+            let response = await fetch(API_URL, {
+                method: 'GET',
+                headers: {
+                    ...headersData,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            let data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error:', error);
         }
     }
 
@@ -25,7 +46,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
 
     // get data
-    const em_collections = await getData();
+    const em_collections = await fetchDataAndHandleResponse();
 
     // stop executing code if error fetching data
     if (!em_collections) {
@@ -54,7 +75,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     function duplicateCollectionCard() {
         // Get the element to be duplicated
-        const originalElement = document.getElementById("collection_card_link1");
+        const originalElement = document.getElementById("collection-wrapper");
 
         // Clone the element and all its children
         const clonedElement = originalElement.cloneNode(true);
@@ -79,7 +100,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         const headingDiv = clonedElement.querySelector(".collection-card-heading");
         // Update its content
         if (headingDiv) {
-            headingDiv.textContent = em_coll.title;
+            headingDiv.textContent = em_coll.name;
         }
         // moviePoster.classList.add("movie-image");
         // moviePoster.src = `${IMAGE_PATH}${em_coll.poster_path}`;

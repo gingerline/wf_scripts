@@ -52,37 +52,39 @@ function getNextSiblingWithClass(element, className) {
 })();
 // attaching listeners to all delete collection buttons
 (function clickDeleteCollectionButton() {
+
+    function clickHandler(event) {
+        const em_collectionId = event.target.getAttribute("em-collectionId");
+        const selector = "#wf-form-Delete-Collection[em-collectionId=\"" + em_collectionId + "\"]";
+        const form = document.querySelector(selector);
+        if (form) {
+            // Reset the inputs in the form
+            form.reset();
+            const submitButton = form.querySelector(".popup-form-error-button");
+            submitButton.disabled = true;
+            submitButton.classList.add("disabled");
+
+            // Show the form
+            form.style.display = "block";
+
+            // Get the success message div with class "w-form-done"
+            var successDiv = getNextSiblingWithClass(form, "w-form-done");
+            if (successDiv) {
+                successDiv.style.display = "none";
+            }
+
+            // Get the error message div with class "w-form-done"
+            var errorDiv = getNextSiblingWithClass(form, "w-form-fail");
+            if (errorDiv) {
+                errorDiv.style.display = "none";
+            }
+        }
+
+    }
     const appButtons = document.getElementsByClassName("delete-coll-button");
     for (let appButton of appButtons) {
         // const appButton = document.getElementById("App-Button1");
-        appButton.addEventListener("click", event => {
-            const em_collectionId = event.target.getAttribute("em-collectionId");
-            const selector = "#wf-form-Delete-Collection[em-collectionId=\"" + em_collectionId + "\"]";
-            const form = document.querySelector(selector);
-            if (form) {
-                // Reset the inputs in the form
-                form.reset();
-                const submitButton = form.querySelector(".popup-form-error-button");
-                submitButton.disabled = true;
-                submitButton.classList.add("disabled");
-
-                // Show the form
-                form.style.display = "block";
-
-                // Get the success message div with class "w-form-done"
-                var successDiv = getNextSiblingWithClass(form, "w-form-done");
-                if (successDiv) {
-                    successDiv.style.display = "none";
-                }
-
-                // Get the error message div with class "w-form-done"
-                var errorDiv = getNextSiblingWithClass(form, "w-form-fail");
-                if (errorDiv) {
-                    errorDiv.style.display = "none";
-                }
-            }
-
-        });
+        appButton.addEventListener("click", clickHandler);
     }
 
 })();
