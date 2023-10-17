@@ -295,9 +295,9 @@ async function reloadData() {
         // Check if the contentTableDiv has a child element with class "w-dyn-empty"
 
         // If it has the class, show the contentSectionDiv div and hide the contentTableDiv
-        document.getElementById("content-mid-table").style.display = "none";
-        document.getElementById("content-mid-starter").style.display = "none";
-        document.getElementById("spinners").style.display = "flex";
+        contentTableDiv.style.display = "none";
+        contentSectionDiv.style.display = "none";
+        spinner.style.display = "flex";
 
     }
 
@@ -308,22 +308,6 @@ async function reloadData() {
     if (!em_keys) {
         errorDetected();
         return;
-    }
-
-
-
-    // Check if the contentTableDiv has a child element with class "w-dyn-empty"
-    if (em_keys && em_keys.length > 0) {
-        // If it has the class, show the contentSectionDiv div and hide the contentTableDiv
-        contentTableDiv.style.display = "block";
-        contentSectionDiv.style.display = "none";
-        spinner.style.display = "none";
-        $("#table-wrapper").empty();
-    } else {
-        // If it doesn't have the class, show the contentTableDiv and hide the contentSectionDiv div
-        contentTableDiv.style.display = "none";
-        contentSectionDiv.style.display = "block";
-        spinner.style.display = "none";
     }
 
     function duplicateKeyRow() {
@@ -343,30 +327,46 @@ async function reloadData() {
         return clonedElement;
     }
 
+    // Check if the contentTableDiv has a child element with class "w-dyn-empty"
+    if (em_keys && em_keys.length > 0) {
+        // If it has the class, show the contentSectionDiv div and hide the contentTableDiv
+        contentTableDiv.style.display = "block";
+        contentSectionDiv.style.display = "none";
+        spinner.style.display = "none";
+        $("#table-wrapper").empty();
 
-    // iterate through data results
-    // create img element for each data item
-    // add class to each image (class exists in Webflow)
-    // append each item to movie grid
-    em_keys.forEach((em_key) => {
-        const clonedElement = duplicateKeyRow();
 
-        // Update the div with ID "coll-name" within the cloned element
-        clonedElement.find("#key-name").text(em_key.name);
+        // iterate through data results
+        // create img element for each data item
+        // add class to each image (class exists in Webflow)
+        // append each item to movie grid
+        em_keys.forEach((em_key) => {
+            const clonedElement = duplicateKeyRow();
 
-        // Update the div with ID "coll-description" within the cloned element
-        clonedElement.find("#key-value").text("**" + em_key.name + "**");
+            // Update the div with ID "coll-name" within the cloned element
+            clonedElement.find("#key-name").text(em_key.name);
 
-        clonedElement.attr('em-keyId', em_key.id);
+            // Update the div with ID "coll-description" within the cloned element
+            clonedElement.find("#key-value").text("**" + em_key.name + "**");
 
-        clonedElement.find(".action-link-table").attr('em-keyId', em_key.id);
-        clonedElement.find(".action-link-table").attr('em-keyName', em_key.name);
+            clonedElement.attr('em-keyId', em_key.id);
 
-        // Show the cloned element (assuming it was hidden before)
-        //clonedElement.show();
-        clonedElement.removeClass("key-wrapper");
+            clonedElement.find(".action-link-table").attr('em-keyId', em_key.id);
+            clonedElement.find(".action-link-table").attr('em-keyName', em_key.name);
 
-    });
+            // Show the cloned element (assuming it was hidden before)
+            //clonedElement.show();
+            clonedElement.removeClass("key-wrapper");
+
+        });
+    } else {
+        // If it doesn't have the class, show the contentTableDiv and hide the contentSectionDiv div
+        contentTableDiv.style.display = "none";
+        contentSectionDiv.style.display = "block";
+        spinner.style.display = "none";
+    }
+
+
 
     // attaching listeners to add key buttons
     $(".add-key-button").on("click", openAddPopupClickHandler);
