@@ -188,7 +188,16 @@ Webflow.push(function () {
 
         var finalData = JSON.stringify({
             "name": formDataObj.name,
-            "description": formDataObj.name
+            "description": formDataObj.name,
+            "config": {
+                "dim": 1536,
+                "m": 16,
+                "efConstruction": 16,
+                "ef": 16,
+                "model": "string",
+                "algo": "cosine",
+                "allowReplace": true
+            }
         });
 
         // change the formMethodType if its delete
@@ -197,6 +206,7 @@ Webflow.push(function () {
             formMethodType = "delete";
             finalData = {};
         }
+
 
 
         $.ajax(finalActionURL, {

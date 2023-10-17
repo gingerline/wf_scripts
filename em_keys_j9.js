@@ -40,7 +40,8 @@ function getNextSiblingWithClass(element, className) {
 // attaching listeners to delete key buttons
 function openDeletePopupClickHandler(event) {
     // Set the initial state for all sibling elements
-    const elem = event.target;
+    //const targetElem = event.target;
+    let elem = event.target.closest(".action-link-table");
     const em_keyName = elem.getAttribute("em-keyName");
     const em_keyId = elem.getAttribute("em-keyId");
     const deleteModal = document.getElementById("delete-popup");
@@ -171,7 +172,7 @@ Webflow.push(function () {
         console.log(formDataObj);
         debugger;
         const keyId = $form.attr('em-keyId');
-        const finalActionURL = formActionURL + '/' + keyId;
+        let finalActionURL = formActionURL;
 
         let outsetaJWT = getOutsetaKey();
 
@@ -181,18 +182,31 @@ Webflow.push(function () {
         };
         console.log("Headers for the request:", headersData);
         console.log(JSON.stringify({
-            name: formDataObj.name
+            name: formDataObj.name,
+            description: formDataObj.name
         }));
 
         var finalData = JSON.stringify({
-            "name": formDataObj.name
+            "name": formDataObj.name,
+            "description": formDataObj.name,
+            "config": {
+                "dim": 1536,
+                "m": 16,
+                "efConstruction": 16,
+                "ef": 16,
+                "model": "string",
+                "algo": "cosine",
+                "allowReplace": true
+            }
         });
 
         // change the formMethodType if its delete
         if ($form.attr("id") === "wf-form-Delete-Key") {
+            finalActionURL = formActionURL + '/' + keyId;
             formMethodType = "delete";
             finalData = {};
         }
+
 
 
         $.ajax(finalActionURL, {
