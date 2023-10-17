@@ -40,7 +40,8 @@ function getNextSiblingWithClass(element, className) {
 // attaching listeners to delete key buttons
 function openDeletePopupClickHandler(event) {
     // Set the initial state for all sibling elements
-    const elem = event.target;
+    //const targetElem = event.target;
+    let elem = event.target.closest(".action-link-table");
     const em_keyName = elem.getAttribute("em-keyName");
     const em_keyId = elem.getAttribute("em-keyId");
     const deleteModal = document.getElementById("delete-popup");
@@ -241,9 +242,9 @@ async function reloadData() {
     const contentSectionDiv = document.getElementById("content-mid-starter");
     const spinner = document.getElementById("spinners");
 
-    document.getElementById("content-mid-table").style.display = "none";
-    document.getElementById("content-mid-starter").style.display = "none";
-    document.getElementById("spinners").style.display = "block";
+    contentTableDiv.style.display = "none";
+    contentSectionDiv.style.display = "none";
+    spinner.style.display = "flex";
 
     // initial styles
     // movieGrid.style.opacity = "0%";
@@ -271,6 +272,7 @@ async function reloadData() {
             return data;
         } catch (error) {
             console.error('Error:', error);
+            errorDetected();
         }
     }
 
@@ -282,7 +284,7 @@ async function reloadData() {
         // If it has the class, show the contentSectionDiv div and hide the contentTableDiv
         document.getElementById("content-mid-table").style.display = "none";
         document.getElementById("content-mid-starter").style.display = "none";
-        document.getElementById("spinners").style.display = "none";
+        document.getElementById("spinners").style.display = "flex";
 
     }
 
@@ -344,19 +346,17 @@ async function reloadData() {
 
         clonedElement.attr('em-keyId', em_key.id);
 
-        clonedElement.find(".table-action-link").attr('em-keyId', em_key.id);
-        clonedElement.find(".table-action-link").attr('em-keyName', em_key.name);
+        clonedElement.find(".action-link-table").attr('em-keyId', em_key.id);
+        clonedElement.find(".action-link-table").attr('em-keyName', em_key.name);
 
         // Show the cloned element (assuming it was hidden before)
-        clonedElement.show();
+        //clonedElement.show();
+        clonedElement.removeClass("key-wrapper");
 
     });
 
     // attaching listeners to add key buttons
-    const addButtons = document.getElementsByClassName("add-key-button");
-    addButtons.forEach((add_btn) => {
-        add_btn.on("click", openAddPopupClickHandler);
-    });
+    $(".add-key-button").on("click", openAddPopupClickHandler);
 
 
     // // remove loader and show movie grid

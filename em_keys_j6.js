@@ -40,7 +40,8 @@ function getNextSiblingWithClass(element, className) {
 // attaching listeners to delete key buttons
 function openDeletePopupClickHandler(event) {
     // Set the initial state for all sibling elements
-    const elem = event.target;
+    //const targetElem = event.target;
+    let elem = event.target.closest(".action-link-table");
     const em_keyName = elem.getAttribute("em-keyName");
     const em_keyId = elem.getAttribute("em-keyId");
     const deleteModal = document.getElementById("delete-popup");
