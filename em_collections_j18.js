@@ -45,6 +45,13 @@ function openDeletePopupClickHandler(event) {
     const em_collectionName = elem.getAttribute("em-collectionName");
     const em_collectionId = elem.getAttribute("em-collectionId");
     const deleteModal = document.getElementById("delete-popup");
+    if (posthog.isFeatureEnabled('disable-emEvents')) {
+        posthog.capture('user_clicked_delete_collection', {
+            source: "ui"
+        });
+    }
+
+
     if (deleteModal) {
 
         deleteModal.classList.add('add-animation');
@@ -66,6 +73,7 @@ function openDeletePopupClickHandler(event) {
 
 
     const form = deleteModal.querySelector("#wf-form-Delete-Collection");
+
 
     if (form) {
         form.setAttribute("em-collectionId", em_collectionId);
@@ -105,7 +113,11 @@ function openEditPopupClickHandler(event) {
     const em_collectionId = elem.getAttribute("em-collectionId");
     const em_collectionDescription = elem.getAttribute("em-collectionDescription");
     const editModal = document.getElementById("edit-popup");
-
+    if (posthog.isFeatureEnabled('disable-emEvents')) {
+        posthog.capture('user_clicked_edit_collection', {
+            source: "ui"
+        });
+    }
 
 
     const form = editModal.querySelector("#wf-form-Edit-Collection");
@@ -151,6 +163,18 @@ function openEditPopupClickHandler(event) {
 
     // finally close the dropdown menu
     openDropdownClickHandler(event);
+
+}
+
+// attaching listeners to edit collection buttons
+function addClickHandler(event) {
+    // Set the initial state for all sibling elements
+    const elem = event.target;
+    if (posthog.isFeatureEnabled('disable-emEvents')) {
+        posthog.capture('user_clicked_add_collection', {
+            source: "ui"
+        });
+    }
 
 }
 
@@ -251,10 +275,26 @@ Webflow.push(function () {
             "description": formDataObj.description
         });
 
+        const formId = $form.attr("id");
         // change the formMethodType if its delete
-        if ($form.attr("id") === "wf-form-Delete-Collection") {
+        if (formId === "wf-form-Delete-Collection") {
             formMethodType = "delete";
             finalData = {};
+            if (posthog.isFeatureEnabled('disable-emEvents')) {
+                posthog.capture('user_submitted_delete_collection', {
+                    source: "ui",
+                    form: formId,
+                    formData: finalData
+                });
+            }
+        } else {
+            if (posthog.isFeatureEnabled('disable-emEvents')) {
+                posthog.capture('user_submitted_edit_collection', {
+                    source: "ui",
+                    form: formId,
+                    formData: finalData
+                });
+            }
         }
 
 
@@ -271,6 +311,23 @@ Webflow.push(function () {
                     .siblings('.w-form-done').show() // Show success
                     .siblings('.w-form-fail').hide(); // Hide failure
 
+                if (formId === "wf-form-Delete-Collection") {
+                    if (posthog.isFeatureEnabled('disable-emEvents')) {
+                        posthog.capture('user_deleted_collection', {
+                            source: "ui",
+                            form: formId,
+                            formData: finalData
+                        });
+                    }
+                } else {
+                    if (posthog.isFeatureEnabled('disable-emEvents')) {
+                        posthog.capture('user_edited_collection', {
+                            source: "ui",
+                            form: formId,
+                            formData: finalData
+                        });
+                    }
+                }
                 // If form redirect setting set, then use this and prevent any other actions
                 if (formRedirect) {
                     setTimeout(function () {
@@ -286,6 +343,14 @@ Webflow.push(function () {
                 $form
                     .siblings('.w-form-done').hide() // Hide success
                     .siblings('.w-form-fail').show(); // show failure
+                if (posthog.isFeatureEnabled('disable-emEvents')) {
+                    posthog.capture('user_form_error', {
+                        source: "ui",
+                        form: formId,
+                        formData: finalData,
+                        errResponse: res
+                    });
+                }
             })
             .always(() => {
                 // Reset text
@@ -357,22 +422,6 @@ async function reloadData() {
         errorDetected();
         return;
     }
-
-
-    // Check if the contentTableDiv has a child element with class "w-dyn-empty"
-    if (em_collections && em_collections.length > 0) {
-        // If it has the class, show the contentSectionDiv div and hide the contentTableDiv
-        contentTableDiv.style.display = "block";
-        contentSectionDiv.style.display = "none";
-        spinner.style.display = "none";
-        $("#table-wrapper").empty();
-    } else {
-        // If it doesn't have the class, show the contentTableDiv and hide the contentSectionDiv div
-        contentTableDiv.style.display = "none";
-        contentSectionDiv.style.display = "block";
-        spinner.style.display = "none";
-    }
-
     function duplicateCollectionCard() {
         // Clone the element and all its children using jQuery
         const clonedElement = $('#collection-wrapper').clone(true);
@@ -393,34 +442,50 @@ async function reloadData() {
         return clonedElement;
     }
 
+    // Check if the contentTableDiv has a child element with class "w-dyn-empty"
+    if (em_collections && em_collections.length > 0) {
+        // If it has the class, show the contentSectionDiv div and hide the contentTableDiv
+        contentTableDiv.style.display = "block";
+        contentSectionDiv.style.display = "none";
+        spinner.style.display = "none";
+        $("#table-wrapper").empty();
 
-    // iterate through data results
-    // create img element for each data item
-    // add class to each image (class exists in Webflow)
-    // append each item to movie grid
-    em_collections.forEach((em_coll) => {
-        const clonedElement = duplicateCollectionCard();
+        // iterate through data results
+        // create img element for each data item
+        // add class to each image (class exists in Webflow)
+        // append each item to movie grid
+        em_collections.forEach((em_coll) => {
+            const clonedElement = duplicateCollectionCard();
 
-        // Update the div with ID "coll-name" within the cloned element
-        clonedElement.find("#coll-name").text(em_coll.name);
+            // Update the div with ID "coll-name" within the cloned element
+            clonedElement.find("#coll-name").text(em_coll.name);
 
-        // Update the div with ID "coll-description" within the cloned element
-        clonedElement.find("#coll-description").text(em_coll.description);
+            // Update the div with ID "coll-description" within the cloned element
+            clonedElement.find("#coll-description").text(em_coll.description);
 
-        clonedElement.attr('em-collectionId', em_coll.id);
-        clonedElement.attr('em-collectionName', em_coll.name);
-        clonedElement.attr('em-collectionDescription', em_coll.description);
+            clonedElement.attr('em-collectionId', em_coll.id);
+            clonedElement.attr('em-collectionName', em_coll.name);
+            clonedElement.attr('em-collectionDescription', em_coll.description);
 
-        clonedElement.find(".action-link").attr('em-collectionId', em_coll.id);
-        clonedElement.find(".action-link").attr('em-collectionName', em_coll.name);
+            clonedElement.find(".action-link").attr('em-collectionId', em_coll.id);
+            clonedElement.find(".action-link").attr('em-collectionName', em_coll.name);
 
-        // also append the description if it the edit button.
-        clonedElement.find('.action-link.edit-coll-button').attr('em-collectionDescription', em_coll.description);
+            // also append the description if it the edit button.
+            clonedElement.find('.action-link.edit-coll-button').attr('em-collectionDescription', em_coll.description);
 
-        // Show the cloned element (assuming it was hidden before)
-        clonedElement.show();
+            // Show the cloned element (assuming it was hidden before)
+            clonedElement.show();
 
-    });
+        });
+    } else {
+        // If it doesn't have the class, show the contentTableDiv and hide the contentSectionDiv div
+        contentTableDiv.style.display = "none";
+        contentSectionDiv.style.display = "block";
+        spinner.style.display = "none";
+    }
+
+    // attaching listeners to add key buttons
+    $(".add-collection-btn").on("click", addClickHandler);
 
     // // remove loader and show movie grid
     setTimeout(() => {

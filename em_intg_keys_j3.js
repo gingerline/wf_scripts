@@ -45,6 +45,11 @@ function openDeletePopupClickHandler(event) {
     const em_keyName = elem.getAttribute("em-keyName");
     const em_keyId = elem.getAttribute("em-keyId");
     const deleteModal = document.getElementById("delete-popup");
+    if (posthog.isFeatureEnabled('disable-emEvents')) {
+        posthog.capture('user_clicked_delete_intgKey', {
+            source: "ui"
+        });
+    }
     if (deleteModal) {
 
         deleteModal.classList.add('add-animation');
@@ -104,6 +109,11 @@ function openAddPopupClickHandler(event) {
     const addModal = document.getElementById("add-popup");
 
     const form = addModal.querySelector("#wf-form-Add-Key");
+    if (posthog.isFeatureEnabled('disable-emEvents')) {
+        posthog.capture('user_clicked_new_intgKey', {
+            source: "ui"
+        });
+    }
     if (form) {
         // Reset the inputs in the form
         form.reset();
@@ -182,13 +192,13 @@ Webflow.push(function () {
         };
         console.log("Headers for the request:", headersData);
         console.log(JSON.stringify({
-            name: formDataObj.name,
-            description: formDataObj.name
+            name: "OpenAI API Key",
+            description: formDataObj.value
         }));
 
         var finalData = JSON.stringify({
-            "name": formDataObj.name,
-            "description": formDataObj.name,
+            "name": "OpenAI API Key",
+            "description": formDataObj.value,
             "config": {
                 "dim": 1536,
                 "m": 16,
@@ -200,11 +210,27 @@ Webflow.push(function () {
             }
         });
 
+        const formId = $form.attr("id");
         // change the formMethodType if its delete
-        if ($form.attr("id") === "wf-form-Delete-Key") {
+        if (formId === "wf-form-Delete-Key") {
             finalActionURL = formActionURL + '/' + keyId;
             formMethodType = "delete";
             finalData = {};
+            if (posthog.isFeatureEnabled('disable-emEvents')) {
+                posthog.capture('user_submitted_delete_intgKey', {
+                    source: "ui",
+                    form: formId,
+                    formData: finalData
+                });
+            }
+        } else {
+            if (posthog.isFeatureEnabled('disable-emEvents')) {
+                posthog.capture('user_submitted_new_intgKey', {
+                    source: "ui",
+                    form: formId,
+                    formData: finalData
+                });
+            }
         }
 
 
@@ -221,7 +247,23 @@ Webflow.push(function () {
                     .hide() // optional hiding of form
                     .siblings('.w-form-done').show() // Show success
                     .siblings('.w-form-fail').hide(); // Hide failure
-
+                if (formId === "wf-form-Delete-emKey") {
+                    if (posthog.isFeatureEnabled('disable-emEvents')) {
+                        posthog.capture('user_deleted_intgKey', {
+                            source: "ui",
+                            form: formId,
+                            formData: finalData
+                        });
+                    }
+                } else {
+                    if (posthog.isFeatureEnabled('disable-emEvents')) {
+                        posthog.capture('user_created_new_intgKey', {
+                            source: "ui",
+                            form: formId,
+                            formData: finalData
+                        });
+                    }
+                }
                 // If form redirect setting set, then use this and prevent any other actions
                 if (formRedirect) {
                     setTimeout(function () {
@@ -237,6 +279,14 @@ Webflow.push(function () {
                 $form
                     .siblings('.w-form-done').hide() // Hide success
                     .siblings('.w-form-fail').show(); // show failure
+                if (posthog.isFeatureEnabled('disable-emEvents')) {
+                    posthog.capture('user_form_error', {
+                        source: "ui",
+                        form: formId,
+                        formData: finalData,
+                        errResponse: res
+                    });
+                }
             })
             .always(() => {
                 // Reset text
@@ -310,22 +360,6 @@ async function reloadData() {
         return;
     }
 
-
-
-    // Check if the contentTableDiv has a child element with class "w-dyn-empty"
-    if (em_keys && em_keys.length > 0) {
-        // If it has the class, show the contentSectionDiv div and hide the contentTableDiv
-        contentTableDiv.style.display = "block";
-        contentSectionDiv.style.display = "none";
-        spinner.style.display = "none";
-        $("#table-wrapper").empty();
-    } else {
-        // If it doesn't have the class, show the contentTableDiv and hide the contentSectionDiv div
-        contentTableDiv.style.display = "none";
-        contentSectionDiv.style.display = "block";
-        spinner.style.display = "none";
-    }
-
     function duplicateKeyRow() {
         // Clone the element and all its children using jQuery
         const clonedElement = $('#key-wrapper').clone(true);
@@ -343,30 +377,46 @@ async function reloadData() {
         return clonedElement;
     }
 
+    // Check if the contentTableDiv has a child element with class "w-dyn-empty"
+    if (em_keys && em_keys.length > 0) {
+        // If it has the class, show the contentSectionDiv div and hide the contentTableDiv
+        contentTableDiv.style.display = "block";
+        contentSectionDiv.style.display = "none";
+        spinner.style.display = "none";
+        $("#table-wrapper").empty();
 
-    // iterate through data results
-    // create img element for each data item
-    // add class to each image (class exists in Webflow)
-    // append each item to movie grid
-    em_keys.forEach((em_key) => {
-        const clonedElement = duplicateKeyRow();
 
-        // Update the div with ID "coll-name" within the cloned element
-        clonedElement.find("#key-name").text(em_key.name);
+        // iterate through data results
+        // create img element for each data item
+        // add class to each image (class exists in Webflow)
+        // append each item to movie grid
+        em_keys.forEach((em_key) => {
+            const clonedElement = duplicateKeyRow();
 
-        // Update the div with ID "coll-description" within the cloned element
-        clonedElement.find("#key-value").text("**" + em_key.name + "**");
+            // Update the div with ID "coll-name" within the cloned element
+            clonedElement.find("#key-name").text(em_key.name);
 
-        clonedElement.attr('em-keyId', em_key.id);
+            // Update the div with ID "coll-description" within the cloned element
+            clonedElement.find("#key-value").text("**" + em_key.name + "**");
 
-        clonedElement.find(".action-link-table").attr('em-keyId', em_key.id);
-        clonedElement.find(".action-link-table").attr('em-keyName', em_key.name);
+            clonedElement.attr('em-keyId', em_key.id);
 
-        // Show the cloned element (assuming it was hidden before)
-        //clonedElement.show();
-        clonedElement.removeClass("key-wrapper");
+            clonedElement.find(".action-link-table").attr('em-keyId', em_key.id);
+            clonedElement.find(".action-link-table").attr('em-keyName', em_key.name);
 
-    });
+            // Show the cloned element (assuming it was hidden before)
+            //clonedElement.show();
+            clonedElement.removeClass("key-wrapper");
+
+        });
+    } else {
+        // If it doesn't have the class, show the contentTableDiv and hide the contentSectionDiv div
+        contentTableDiv.style.display = "none";
+        contentSectionDiv.style.display = "block";
+        spinner.style.display = "none";
+    }
+
+
 
     // attaching listeners to add key buttons
     $(".add-key-button").on("click", openAddPopupClickHandler);
