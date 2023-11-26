@@ -6,7 +6,7 @@
         inputEl.addEventListener("keyup", event => {
 
             const em_keyId = event.target.getAttribute("em-keyId");
-            const selector = "#wf-form-Delete-emKey[em-keyId=\"" + em_keyId + "\"]";
+            const selector = "#wf-form-Delete-Key[em-keyId=\"" + em_keyId + "\"]";
             const activeFormElement = document.querySelector(selector);
 
             if (activeFormElement) { // Only proceed if the activeFormElement exists.
@@ -46,11 +46,10 @@ function openDeletePopupClickHandler(event) {
     const em_keyId = elem.getAttribute("em-keyId");
     const deleteModal = document.getElementById("delete-popup");
     if (posthog.isFeatureEnabled('enable-emEvents')) {
-        posthog.capture('user_clicked_delete_emKey', {
+        posthog.capture('user_clicked_delete_intgKey', {
             source: "ui"
         });
     }
-
     if (deleteModal) {
 
         deleteModal.classList.add('add-animation');
@@ -71,7 +70,7 @@ function openDeletePopupClickHandler(event) {
     }
 
 
-    const form = deleteModal.querySelector("#wf-form-Delete-emKey");
+    const form = deleteModal.querySelector("#wf-form-Delete-Key");
 
     if (form) {
         form.setAttribute("em-keyId", em_keyId);
@@ -109,13 +108,12 @@ function openAddPopupClickHandler(event) {
     const elem = event.target;
     const addModal = document.getElementById("add-popup");
 
-    const form = addModal.querySelector("#wf-form-Create-emKey");
+    const form = addModal.querySelector("#wf-form-Add-Key");
     if (posthog.isFeatureEnabled('enable-emEvents')) {
-        posthog.capture('user_clicked_new_emKey', {
+        posthog.capture('user_clicked_new_intgKey', {
             source: "ui"
         });
     }
-
     if (form) {
         // Reset the inputs in the form
         form.reset();
@@ -194,41 +192,40 @@ Webflow.push(function () {
         };
         console.log("Headers for the request:", headersData);
         console.log(JSON.stringify({
-            name: formDataObj.name,
+            name: "OpenAI Key",
+            token: formDataObj.value
         }));
 
         var finalData = JSON.stringify({
-            "name": formDataObj.name,
-            "type": "ACCESS",
+            "name": "OpenAI Key",
+            "token": formDataObj.value,
+            "type": "INTEGRATION",
         });
 
         const formId = $form.attr("id");
-
         // change the formMethodType if its delete
-        if (formId === "wf-form-Delete-emKey") {
+        if (formId === "wf-form-Delete-Key") {
             finalActionURL = formActionURL;
             //formMethodType = "delete";
             finalData = JSON.stringify({
                 "id": parseInt(keyId)
             });
             if (posthog.isFeatureEnabled('enable-emEvents')) {
-                posthog.capture('user_submitted_delete_emKey', {
+                posthog.capture('user_submitted_delete_intgKey', {
                     source: "ui",
                     form: formId,
                     formData: finalData
                 });
             }
-        }
-        else {
+        } else {
             if (posthog.isFeatureEnabled('enable-emEvents')) {
-                posthog.capture('user_submitted_new_emKey', {
+                posthog.capture('user_submitted_new_intgKey', {
                     source: "ui",
                     form: formId,
                     formData: finalData
                 });
             }
         }
-
 
 
 
@@ -244,7 +241,23 @@ Webflow.push(function () {
                     .hide() // optional hiding of form
                     .siblings('.w-form-done').show() // Show success
                     .siblings('.w-form-fail').hide(); // Hide failure
-
+                if (formId === "wf-form-Delete-emKey") {
+                    if (posthog.isFeatureEnabled('enable-emEvents')) {
+                        posthog.capture('user_deleted_intgKey', {
+                            source: "ui",
+                            form: formId,
+                            formData: finalData
+                        });
+                    }
+                } else {
+                    if (posthog.isFeatureEnabled('enable-emEvents')) {
+                        posthog.capture('user_created_new_intgKey', {
+                            source: "ui",
+                            form: formId,
+                            formData: finalData
+                        });
+                    }
+                }
                 // If form redirect setting set, then use this and prevent any other actions
                 if (formRedirect) {
                     setTimeout(function () {
@@ -253,25 +266,6 @@ Webflow.push(function () {
                         return;
                     }, 2000); //delay is in milliseconds 
                 }
-
-                if (formId === "wf-form-Delete-emKey") {
-                    if (posthog.isFeatureEnabled('enable-emEvents')) {
-                        posthog.capture('user_deleted_emKey', {
-                            source: "ui",
-                            form: formId,
-                            formData: finalData
-                        });
-                    }
-                } else {
-                    if (posthog.isFeatureEnabled('enable-emEvents')) {
-                        posthog.capture('user_created_new_emKey', {
-                            source: "ui",
-                            form: formId,
-                            formData: finalData
-                        });
-                    }
-                }
-
                 // Call the reloadData function after a successful submission
                 reloadData();
             })
@@ -287,7 +281,6 @@ Webflow.push(function () {
                         errResponse: res
                     });
                 }
-
             })
             .always(() => {
                 // Reset text
@@ -327,7 +320,7 @@ async function reloadData() {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    type: 'ACCESS'
+                    type: 'INTEGRATION'
                 })
             });
 
@@ -397,16 +390,16 @@ async function reloadData() {
         em_keys.forEach((em_key) => {
             const clonedElement = duplicateKeyRow();
 
-            // Update the div with ID "key-name" within the cloned element
-            clonedElement.find("#key-name").text(em_key.name);// replace with name
+            // Update the div with ID "coll-name" within the cloned element
+            clonedElement.find("#key-name").text(em_key.name);
 
-            // Update the div with ID "key-value" within the cloned element
+            // Update the div with ID "coll-description" within the cloned element
             clonedElement.find("#key-value").text(em_key.token);
 
             clonedElement.attr('em-keyId', em_key.id);
 
             clonedElement.find(".action-link-table").attr('em-keyId', em_key.id);
-            clonedElement.find(".action-link-table").attr('em-keyName', em_key.name);// replace with name
+            clonedElement.find(".action-link-table").attr('em-keyName', em_key.name);
 
             // Show the cloned element (assuming it was hidden before)
             //clonedElement.show();

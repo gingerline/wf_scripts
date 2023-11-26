@@ -242,7 +242,6 @@ Webflow.push(function () {
 
                 $form
                     .hide() // optional hiding of form
-                    //.siblings('.w-form-done').find('#secret-key-code').text(res.token)
                     .siblings('.w-form-done').show() // Show success
                     .siblings('.w-form-fail').hide(); // Hide failure
 
