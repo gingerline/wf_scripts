@@ -513,9 +513,13 @@ async function reloadData() {
             var truncatedMetadataString = metadataString.length > 250 ? metadataString.slice(0, 250) + "..." : metadataString;
             clonedElement.find("#vector-metadata").text(truncatedMetadataString);
 
-            var valuesString = em_vec.values.join(", "); // Convert array to string with comma separation
-            var truncatedValuesString = valuesString.length > 250 ? valuesString.slice(0, 250) + "..." : valuesString;
-            clonedElement.find("#vector-values").text(truncatedValuesString);
+            if (em_vec.values !== undefined && em_vec.values !== null) {
+                var valuesString = em_vec.values.join(", "); // Convert array to string with comma separation
+                var truncatedValuesString = valuesString.length > 250 ? valuesString.slice(0, 250) + "..." : valuesString;
+                clonedElement.find("#vector-values").text(truncatedValuesString);
+            } else {
+                clonedElement.find("#vector-values").text('-');
+            }
 
             // Assuming em_vec.score may be undefined or null.
             if (em_vec.score !== undefined && em_vec.score !== null) {
