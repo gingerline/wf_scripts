@@ -1,5 +1,5 @@
 // global constants
-let API_URL = "https://apis.emno.io/collections/";
+let BASE_URL = "https://apis.emno.io/collections/";
 
 // attaching listeners to all modal input boxes for delete collection
 (function keyChangeDeleteCollectionInput() {
@@ -281,7 +281,6 @@ Webflow.push(function () {
         }));
 
 
-
         var finalData = JSON.stringify({
             "name": formDataObj.name,
             "description": formDataObj.description
@@ -415,6 +414,29 @@ async function reloadData() {
         }
     }
 
+    async function fetchVectorsAndHandleResponse(URL) {
+        try {
+            let response = await fetch(URL, {
+                method: 'POST',
+                headers: {
+                    ...headersData,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ "includeVectorValues": false })
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            let data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error:', error);
+            errorDetected();
+        }
+    }
+
     function errorDetected() {
         // document.getElementById("load-icon").style.display = "none";
         // document.getElementById("error-msg").style.display = "block";
@@ -429,7 +451,7 @@ async function reloadData() {
 
     // get collection data
     const collectionId = getParam('collectionId');
-    let API_URL = API_URL + collectionId;
+    let API_URL = BASE_URL + collectionId;
     const em_coll = await fetchDataAndHandleResponse(API_URL);
 
     // stop executing code if error fetching data
@@ -492,8 +514,8 @@ async function reloadData() {
 
 
     // get collection data
-    let VECTOR_API_URL = API_URL + 'vectors/getAll??limit=10';
-    const em_vectors = await fetchDataAndHandleResponse(VECTOR_API_URL);
+    let VECTOR_API_URL = API_URL + '/vectors/getAll??limit=10';
+    const em_vectors = await fetchVectorsAndHandleResponse(VECTOR_API_URL);
     // Check if the contentTableDiv has a child element with class "w-dyn-empty"
     if (em_vectors && em_vectors.length > 0) {
 
@@ -513,15 +535,11 @@ async function reloadData() {
             var truncatedMetadataString = metadataString.length > 250 ? metadataString.slice(0, 250) + "..." : metadataString;
             clonedElement.find("#vector-metadata").text(truncatedMetadataString);
 
-            var valuesString = em_vec.values.join(", "); // Convert array to string with comma separation
-            var truncatedValuesString = valuesString.length > 250 ? valuesString.slice(0, 250) + "..." : valuesString;
-            clonedElement.find("#vector-values").text(truncatedValuesString);
-
-            // Assuming em_vec.score may be undefined or null.
-            if (em_vec.score !== undefined && em_vec.score !== null) {
-                clonedElement.find("#vector-score").text(em_vec.score);
+            if (em_vec.distance) {
+                clonedElement.find("#vector-distance").text(em_vec.distance);
             } else {
-                clonedElement.find("#vector-score").text('-');
+                clonedElement.find("#vector-distance").hide();
+                clonedElement.find("#vector-distance-block").hide();
             }
 
             clonedElement.attr('em-vectorId', em_vec.id);
