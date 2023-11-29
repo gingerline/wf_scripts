@@ -1,3 +1,6 @@
+// global constants
+let BASE_URL = "https://apis.emno.io/collections/";
+
 // attaching listeners to all modal input boxes for delete collection
 (function keyChangeDeleteCollectionInput() {
     const inputTexts = document.getElementsByClassName("delete-collection-input");
@@ -45,6 +48,13 @@ function openDeletePopupClickHandler(event) {
     const em_collectionName = elem.getAttribute("em-collectionName");
     const em_collectionId = elem.getAttribute("em-collectionId");
     const deleteModal = document.getElementById("delete-popup");
+    if (posthog.isFeatureEnabled('enable-emEvents')) {
+        posthog.capture('user_clicked_delete_collection', {
+            source: "ui"
+        });
+    }
+
+
     if (deleteModal) {
 
         deleteModal.classList.add('add-animation');
@@ -66,6 +76,7 @@ function openDeletePopupClickHandler(event) {
 
 
     const form = deleteModal.querySelector("#wf-form-Delete-Collection");
+
 
     if (form) {
         form.setAttribute("em-collectionId", em_collectionId);
@@ -105,7 +116,11 @@ function openEditPopupClickHandler(event) {
     const em_collectionId = elem.getAttribute("em-collectionId");
     const em_collectionDescription = elem.getAttribute("em-collectionDescription");
     const editModal = document.getElementById("edit-popup");
-
+    if (posthog.isFeatureEnabled('enable-emEvents')) {
+        posthog.capture('user_clicked_edit_collection', {
+            source: "ui"
+        });
+    }
 
 
     const form = editModal.querySelector("#wf-form-Edit-Collection");
@@ -151,6 +166,18 @@ function openEditPopupClickHandler(event) {
 
     // finally close the dropdown menu
     openDropdownClickHandler(event);
+
+}
+
+// attaching listeners to edit collection buttons
+function addClickHandler(event) {
+    // Set the initial state for all sibling elements
+    const elem = event.target;
+    if (posthog.isFeatureEnabled('enable-emEvents')) {
+        posthog.capture('user_clicked_add_collection', {
+            source: "ui"
+        });
+    }
 
 }
 
@@ -202,7 +229,18 @@ const headersData = {
     'Authorization': 'Bearer ' + outsetaJWT
 };
 
+function getParam(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+
 Webflow.push(function () {
+
+
+
     // unbind webflow form handling (keep this if you only want to affect specific forms)
     $(document).off('submit');
 
@@ -213,12 +251,10 @@ Webflow.push(function () {
         const $form = $(this); // The submitted form
         const $submit = $('[type=submit]', $form); // Submit button of form
         const buttonText = $submit.val(); // Original button text
-        const buttonWaitingText = $submit.attr('data-wait'); // Waiting button text value
         var formMethodType = $form.attr('method'); // Form method (where it submits to)
         const formActionURL = $form.attr('action'); // Form action (GET/POST)
         const formRedirect = $form.attr('data-redirect'); // Form redirect location
         const formDataString = $form.serialize(); // Form data
-        console.log(formDataString);
 
 
         const formDataObj = formDataString.split('&').reduce((acc, keyValue) => {
@@ -245,16 +281,31 @@ Webflow.push(function () {
         }));
 
 
-
         var finalData = JSON.stringify({
             "name": formDataObj.name,
             "description": formDataObj.description
         });
 
+        const formId = $form.attr("id");
         // change the formMethodType if its delete
-        if ($form.attr("id") === "wf-form-Delete-Collection") {
+        if (formId === "wf-form-Delete-Collection") {
             formMethodType = "delete";
             finalData = {};
+            if (posthog.isFeatureEnabled('enable-emEvents')) {
+                posthog.capture('user_submitted_delete_collection', {
+                    source: "ui",
+                    form: formId,
+                    formData: finalData
+                });
+            }
+        } else {
+            if (posthog.isFeatureEnabled('enable-emEvents')) {
+                posthog.capture('user_submitted_edit_collection', {
+                    source: "ui",
+                    form: formId,
+                    formData: finalData
+                });
+            }
         }
 
 
@@ -271,6 +322,23 @@ Webflow.push(function () {
                     .siblings('.w-form-done').show() // Show success
                     .siblings('.w-form-fail').hide(); // Hide failure
 
+                if (formId === "wf-form-Delete-Collection") {
+                    if (posthog.isFeatureEnabled('enable-emEvents')) {
+                        posthog.capture('user_deleted_collection', {
+                            source: "ui",
+                            form: formId,
+                            formData: finalData
+                        });
+                    }
+                } else {
+                    if (posthog.isFeatureEnabled('enable-emEvents')) {
+                        posthog.capture('user_edited_collection', {
+                            source: "ui",
+                            form: formId,
+                            formData: finalData
+                        });
+                    }
+                }
                 // If form redirect setting set, then use this and prevent any other actions
                 if (formRedirect) {
                     setTimeout(function () {
@@ -286,6 +354,14 @@ Webflow.push(function () {
                 $form
                     .siblings('.w-form-done').hide() // Hide success
                     .siblings('.w-form-fail').show(); // show failure
+                if (posthog.isFeatureEnabled('enable-emEvents')) {
+                    posthog.capture('user_form_error', {
+                        source: "ui",
+                        form: formId,
+                        formData: finalData,
+                        errResponse: res
+                    });
+                }
             })
             .always(() => {
                 // Reset text
@@ -299,9 +375,13 @@ Webflow.push(function () {
 window.addEventListener("DOMContentLoaded", reloadData);
 
 async function reloadData() {
+
+
     const contentTableDiv = document.getElementById("content-mid-table");
     const contentSectionDiv = document.getElementById("content-mid-starter");
     const spinner = document.getElementById("spinners");
+    const noVectors = document.getElementById("no-vectors");
+    const tableWrapper = document.getElementById("table-wrapper");
 
     contentTableDiv.style.display = "none";
     contentSectionDiv.style.display = "none";
@@ -311,18 +391,40 @@ async function reloadData() {
     // movieGrid.style.opacity = "0%";
     document.body.style.overflow = "hidden";
 
-    // global constants
-    const API_URL = "https://test-emno.fly.dev/collections";
+
     debugger;
     // functions
-    async function fetchDataAndHandleResponse() {
+    async function fetchDataAndHandleResponse(URL) {
         try {
-            let response = await fetch(API_URL, {
+            let response = await fetch(URL, {
                 method: 'GET',
                 headers: {
                     ...headersData,
                     'Content-Type': 'application/json'
                 }
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            let data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error:', error);
+            errorDetected();
+        }
+    }
+
+    async function fetchVectorsAndHandleResponse(URL) {
+        try {
+            let response = await fetch(URL, {
+                method: 'POST',
+                headers: {
+                    ...headersData,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ "includeVectorValues": false })
             });
 
             if (!response.ok) {
@@ -349,27 +451,73 @@ async function reloadData() {
 
     }
 
-    // get data
-    const em_collections = await fetchDataAndHandleResponse();
+    // get collection data
+    const collectionId = getParam('collectionId');
+    let API_URL = BASE_URL + collectionId;
+    const em_coll = await fetchDataAndHandleResponse(API_URL);
 
     // stop executing code if error fetching data
-    if (!em_collections) {
+    if (!em_coll) {
         errorDetected();
         return;
     }
-    function duplicateCollectionCard() {
+
+    // populate collection card
+    if (em_coll) {
+        const emCollCard = $('#collection-wrapper');
+
+        // Update collection attributes
+        emCollCard.find("#coll-name").text(em_coll.name);
+        emCollCard.find("#coll-description").text(em_coll.description);
+        emCollCard.find("#coll-dimension").text(em_coll.config.dim);
+        emCollCard.find("#coll-id").text(em_coll.id);
+        emCollCard.find("#coll-model").text(em_coll.config.model);
+
+        // update the collection card custom attributes
+        emCollCard.attr('em-collectionId', em_coll.id);
+        emCollCard.attr('em-collectionName', em_coll.name);
+        emCollCard.attr('em-collectionDescription', em_coll.description);
+
+
+        emCollCard.find(".action-link").attr('em-collectionId', em_coll.id);
+        emCollCard.find(".action-link").attr('em-collectionName', em_coll.name);
+
+        // also append the description if it the edit button.
+        emCollCard.find('.action-link.edit-coll-button').attr('em-collectionDescription', em_coll.description);
+
+
+        // connect the dropdownHandlers
+        const deleteCollectionMenu = clonedElement.find(".delete-coll-button");
+        deleteCollectionMenu.on("click", openDeletePopupClickHandler);
+
+        const editCollectionMenu = clonedElement.find(".edit-coll-button");
+        editCollectionMenu.on("click", openEditPopupClickHandler);
+
+        const dropdownTrigger = clonedElement.find(".dropdown-trigger");
+        dropdownTrigger.on("click", openDropdownClickHandler);
+
+
+        // hide and show the elements
+        contentSectionDiv.style.display = "block";
+        contentTableDiv.style.display = "block";
+        spinner.style.display = "none";
+    } else {
+        // If it doesn't have the class, show the contentTableDiv and hide the contentSectionDiv div
+        contentTableDiv.style.display = "none";
+        contentSectionDiv.style.display = "none";
+        spinner.style.display = "none";
+    }
+
+    function duplicateVectorCard() {
         // Clone the element and all its children using jQuery
-        const clonedElement = $('#collection-wrapper').clone(true);
-        clonedElement.attr('id', 'new-collection-wrapper');
+        const clonedElement = $('#vector-wrapper').clone(true);
+        clonedElement.attr('id', 'new-vector-wrapper');
         // Append the cloned element to the same parent as the original using jQuery
         clonedElement.appendTo('#table-wrapper');
 
 
-        const deleteMenu = clonedElement.find(".delete-coll-button");
-        deleteMenu.on("click", openDeletePopupClickHandler);
-
-        const editMenu = clonedElement.find(".edit-coll-button");
-        editMenu.on("click", openEditPopupClickHandler);
+        const deleteVectorMenu = clonedElement.find(".delete-vector-button");
+        deleteVectorMenu.on("click", openDeletePopupClickHandler);
 
         const dropdownTrigger = clonedElement.find(".dropdown-trigger");
         dropdownTrigger.on("click", openDropdownClickHandler);
@@ -377,48 +525,58 @@ async function reloadData() {
         return clonedElement;
     }
 
+
+    // get collection data
+    let VECTOR_API_URL = API_URL + '/vectors/getAll??limit=10';
+    const em_vectors = await fetchVectorsAndHandleResponse(VECTOR_API_URL);
     // Check if the contentTableDiv has a child element with class "w-dyn-empty"
-    if (em_collections && em_collections.length > 0) {
-        // If it has the class, show the contentSectionDiv div and hide the contentTableDiv
-        contentTableDiv.style.display = "block";
-        contentSectionDiv.style.display = "none";
-        spinner.style.display = "none";
+    if (em_vectors && em_vectors.length > 0) {
+
         $("#table-wrapper").empty();
 
         // iterate through data results
         // create img element for each data item
         // add class to each image (class exists in Webflow)
         // append each item to movie grid
-        em_collections.forEach((em_coll) => {
-            const clonedElement = duplicateCollectionCard();
+        em_vectors.forEach((em_vec) => {
+            const clonedElement = duplicateVectorCard();
 
-            // Update the div with ID "coll-name" within the cloned element
-            clonedElement.find("#coll-name").text(em_coll.name);
+            clonedElement.find("#vector-id").text(em_vec.id);
+            clonedElement.find("#vector-content").text(em_vec.content);
 
-            // Update the div with ID "coll-description" within the cloned element
-            clonedElement.find("#coll-description").text(em_coll.description);
+            var metadataString = JSON.stringify(em_vec.metadata, null, 2);
+            var truncatedMetadataString = metadataString.length > 250 ? metadataString.slice(0, 250) + "..." : metadataString;
+            clonedElement.find("#vector-metadata").text(truncatedMetadataString);
 
-            clonedElement.attr('em-collectionId', em_coll.id);
-            clonedElement.attr('em-collectionName', em_coll.name);
-            clonedElement.attr('em-collectionDescription', em_coll.description);
+            if (em_vec.distance) {
+                clonedElement.find("#vector-distance").text(em_vec.distance);
+            } else {
+                clonedElement.find("#vector-distance").hide();
+                clonedElement.find("#vector-distance-block").hide();
+                clonedElement.find("#vector-distance-block-prev").hide();
+            }
 
-            clonedElement.find(".action-link").attr('em-collectionId', em_coll.id);
-            clonedElement.find(".action-link").attr('em-collectionName', em_coll.name);
+            clonedElement.attr('em-vectorId', em_vec.id);
+            clonedElement.find(".action-link").attr('em-vectorId', em_coll.id);
 
             // also append the description if it the edit button.
-            clonedElement.find('.action-link.edit-coll-button').attr('em-collectionDescription', em_coll.description);
+            //clonedElement.find('.action-link.edit-coll-button').attr('em-collectionDescription', em_coll.description);
 
             // Show the cloned element (assuming it was hidden before)
             clonedElement.show();
 
         });
+        // hide the no vectors content and show the table
+        noVectors.style.display = "none";
+        tableWrapper.style.display = "block";
     } else {
-        // If it doesn't have the class, show the contentTableDiv and hide the contentSectionDiv div
-        contentTableDiv.style.display = "none";
-        contentSectionDiv.style.display = "block";
-        spinner.style.display = "none";
+        // show the no vectors content and show the table
+        noVectors.style.display = "block";
+        tableWrapper.style.display = "none";
     }
 
+    // attaching listeners to add key buttons
+    $(".add-collection-btn").on("click", addClickHandler);
 
     // // remove loader and show movie grid
     setTimeout(() => {
