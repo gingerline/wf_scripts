@@ -1,38 +1,38 @@
 // global constants
 //const API_URL = "https://apis.emno.io/collections";
-const API_URL = "http://localhost:4000/collections"
+const API_URL = "http://localhost:4000/collections";
 
-    // attaching listeners to all modal input boxes for delete collection
-    (function keyChangeDeleteCollectionInput() {
-        const inputTexts = document.getElementsByClassName("delete-collection-input");
+// attaching listeners to all modal input boxes for delete collection
+(function keyChangeDeleteCollectionInput() {
+    const inputTexts = document.getElementsByClassName("delete-collection-input");
 
-        for (let inputEl of inputTexts) {
-            inputEl.addEventListener("keyup", event => {
+    for (let inputEl of inputTexts) {
+        inputEl.addEventListener("keyup", event => {
 
-                //const activeFormElement = document.querySelector('#delete-popup[style="display: block; opacity: 1;"] #wf-form-Delete-Collection');
-                const em_collectionId = event.target.getAttribute("em-collectionId");
-                const selector = "#wf-form-Delete-Collection[em-collectionId=\"" + em_collectionId + "\"]";
-                const activeFormElement = document.querySelector(selector);
+            //const activeFormElement = document.querySelector('#delete-popup[style="display: block; opacity: 1;"] #wf-form-Delete-Collection');
+            const em_collectionId = event.target.getAttribute("em-collectionId");
+            const selector = "#wf-form-Delete-Collection[em-collectionId=\"" + em_collectionId + "\"]";
+            const activeFormElement = document.querySelector(selector);
 
-                if (activeFormElement) { // Only proceed if the activeFormElement exists.
-                    const submitButton = activeFormElement.querySelector(".popup-form-error-button");
+            if (activeFormElement) { // Only proceed if the activeFormElement exists.
+                const submitButton = activeFormElement.querySelector(".popup-form-error-button");
+                submitButton.disabled = true;
+                submitButton.classList.add("disabled");
+                const inputText = activeFormElement.querySelector("#delete-collection-input");
+                var actualItemName = inputText.getAttribute("collection-item").trim();
+
+                var inputVal = inputText.value.trim();
+                if (inputVal === actualItemName) {
+                    submitButton.disabled = false;
+                    submitButton.classList.remove("disabled");
+                } else {
                     submitButton.disabled = true;
                     submitButton.classList.add("disabled");
-                    const inputText = activeFormElement.querySelector("#delete-collection-input");
-                    var actualItemName = inputText.getAttribute("collection-item").trim();
-
-                    var inputVal = inputText.value.trim();
-                    if (inputVal === actualItemName) {
-                        submitButton.disabled = false;
-                        submitButton.classList.remove("disabled");
-                    } else {
-                        submitButton.disabled = true;
-                        submitButton.classList.add("disabled");
-                    }
                 }
-            });
-        }
-    })();
+            }
+        });
+    }
+})();
 
 function getNextSiblingWithClass(element, className) {
     while (element = element.nextSibling) {
