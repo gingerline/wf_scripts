@@ -48,7 +48,7 @@ let BASE_URL = "https://apis.emno.io/collections/";
                 const submitButton = activeFormElement.querySelector(".popup-form-error-button");
                 submitButton.disabled = true;
                 submitButton.classList.add("disabled");
-                const inputText = activeFormElement.querySelector("#delete-collection-input");
+                const inputText = activeFormElement.querySelector("#delete-all-vectors-input");
                 var actualItemName = inputText.getAttribute("collection-item").trim();
 
                 var inputVal = inputText.value.trim();
@@ -569,6 +569,19 @@ Webflow.push(function () {
                     formData: finalData
                 });
             }
+        } else if (formId === "wf-form-Query-Vector") {
+            finalActionURL = finalActionURL + '/query/text';
+            finalData = JSON.stringify({
+                "content": [formDataObj.content],
+                "topK": formDataObj.topK
+            });
+            if (posthog.isFeatureEnabled('enable-emEvents')) {
+                posthog.capture('user_submitted_query_vector', {
+                    source: "ui",
+                    form: formId,
+                    formData: finalData
+                });
+            }
         } else {
             if (posthog.isFeatureEnabled('enable-emEvents')) {
                 posthog.capture('user_submitted_edit_collection', {
@@ -593,15 +606,21 @@ Webflow.push(function () {
                     .siblings('.w-form-done').show() // Show success
                     .siblings('.w-form-fail').hide(); // Hide failure
 
-                const $doneMessage = $form.siblings('.w-form-done').find('#tiny-createdVector');
-                const count = res.length;
+                if (formId === "wf-form-Add-Vector") {
+                    const $doneMessage = $form.siblings('.w-form-done').find('#tiny-createdVector');
+                    const count = res.length;
 
-                if (count === 1) {
-                    $doneMessage.text(`1 vector is created for your text.`);
-                } else {
-                    $doneMessage.text(`${count} vectors are created for your text.`);
+                    if (count === 1) {
+                        $doneMessage.text(`1 vector is created for your text.`);
+                    } else {
+                        $doneMessage.text(`${count} vectors are created for your text.`);
+                    }
+                }
+                else if (formId === "wf-form-Query-Vector") {
+                    $form.siblings('.w-form-done').hide() // Show success
                 }
 
+                // record posthog events
                 if (formId === "wf-form-Delete-Collection") {
                     if (posthog.isFeatureEnabled('enable-emEvents')) {
                         posthog.capture('user_deleted_collection', {
@@ -808,7 +827,7 @@ async function reloadData() {
         // Remove any existing click event listeners before attaching a new one
         deleteAllVectorsMenu.off("click", openDeleteAllVectorsPopupClickHandler);
         // Attach the click event listener
-        deleteCollectionMenu.on("click", openDeleteAllVectorsPopupClickHandler);
+        deleteAllVectorsMenu.on("click", openDeleteAllVectorsPopupClickHandler);
 
         const dropdownTrigger = emCollCard.find(".dropdown-collection-trigger");
         // Remove any existing click event listeners before attaching a new one
