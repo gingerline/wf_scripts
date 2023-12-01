@@ -673,7 +673,7 @@ Webflow.push(function () {
                 }
                 // Call the reloadData function after a successful submission
                 if (formId === "wf-form-Query-Vector") {
-                    reloadVectorData(res);
+                    reloadVectorData(res[0]);
                 } else {
                     reloadAllData();
                 }
