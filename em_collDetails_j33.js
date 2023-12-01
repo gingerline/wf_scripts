@@ -673,7 +673,7 @@ Webflow.push(function () {
                     }, 2000); //delay is in milliseconds 
                 }
                 // Call the reloadData function after a successful submission
-                reloadData();
+                reloadAllData();
             })
             .fail((res) => {
                 $form
