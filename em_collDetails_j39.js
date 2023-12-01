@@ -411,7 +411,7 @@ async function resetQueryFormClickHandler(event) {
     let VECTOR_API_URL = API_URL + '/vectors/getAll??limit=10';
     const em_vectors = await fetchVectorsAndHandleResponse(VECTOR_API_URL);
     await reloadVectorData(em_vectors);
-    $("#reset-button-div").style.display = "none";
+    document.getElementById("reset-button-div").style.display = "none";
 }
 
 // attaching listeners to edit collection buttons
