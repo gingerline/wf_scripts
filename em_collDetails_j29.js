@@ -48,7 +48,7 @@ let BASE_URL = "https://apis.emno.io/collections/";
                 const submitButton = activeFormElement.querySelector(".popup-form-error-button");
                 submitButton.disabled = true;
                 submitButton.classList.add("disabled");
-                const inputText = activeFormElement.querySelector("#delete-collection-input");
+                const inputText = activeFormElement.querySelector("#delete-all-vectors-input");
                 var actualItemName = inputText.getAttribute("collection-item").trim();
 
                 var inputVal = inputText.value.trim();
