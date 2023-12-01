@@ -33,6 +33,68 @@ let BASE_URL = "https://apis.emno.io/collections/";
     }
 })();
 
+(function keyChangeDeleteAllVectorsInput() {
+    const inputTexts = document.getElementsByClassName("delete-all-vectors-input");
+
+    for (let inputEl of inputTexts) {
+        inputEl.addEventListener("keyup", event => {
+
+            //const activeFormElement = document.querySelector('#delete-popup[style="display: block; opacity: 1;"] #wf-form-Delete-Collection');
+            const em_collectionId = event.target.getAttribute("em-collectionId");
+            const selector = "#wf-form-Delete-All-Vectors[em-collectionId=\"" + em_collectionId + "\"]";
+            const activeFormElement = document.querySelector(selector);
+
+            if (activeFormElement) { // Only proceed if the activeFormElement exists.
+                const submitButton = activeFormElement.querySelector(".popup-form-error-button");
+                submitButton.disabled = true;
+                submitButton.classList.add("disabled");
+                const inputText = activeFormElement.querySelector("#delete-collection-input");
+                var actualItemName = inputText.getAttribute("collection-item").trim();
+
+                var inputVal = inputText.value.trim();
+                if (inputVal === actualItemName) {
+                    submitButton.disabled = false;
+                    submitButton.classList.remove("disabled");
+                } else {
+                    submitButton.disabled = true;
+                    submitButton.classList.add("disabled");
+                }
+            }
+        });
+    }
+})();
+
+(function keyChangeDeleteVectorInput() {
+    const inputTexts = document.getElementsByClassName("delete-vector-input");
+
+    for (let inputEl of inputTexts) {
+        inputEl.addEventListener("keyup", event => {
+
+            //const activeFormElement = document.querySelector('#delete-popup[style="display: block; opacity: 1;"] #wf-form-Delete-Collection');
+            const em_vectorId = event.target.getAttribute("em-vectorId");
+            const selector = "#wf-form-Delete-Vector[em-vectorId=\"" + em_vectorId + "\"]";
+            const activeFormElement = document.querySelector(selector);
+
+            if (activeFormElement) { // Only proceed if the activeFormElement exists.
+                const submitButton = activeFormElement.querySelector(".popup-form-error-button");
+                submitButton.disabled = true;
+                submitButton.classList.add("disabled");
+                const inputText = activeFormElement.querySelector("#delete-vector-input");
+                var actualItemId = inputText.getAttribute("em-vectorId").trim();
+
+                var inputVal = inputText.value.trim();
+                if (inputVal === actualItemId) {
+                    submitButton.disabled = false;
+                    submitButton.classList.remove("disabled");
+                } else {
+                    submitButton.disabled = true;
+                    submitButton.classList.add("disabled");
+                }
+            }
+        });
+    }
+})();
+
 function getNextSiblingWithClass(element, className) {
     while (element = element.nextSibling) {
         if (element.nodeType === 1 && element.classList.contains(className)) {
@@ -42,7 +104,7 @@ function getNextSiblingWithClass(element, className) {
     return null;
 }
 // attaching listeners to delete collection buttons
-function openDeletePopupClickHandler(event) {
+function openDeleteCollectionPopupClickHandler(event) {
     // Set the initial state for all sibling elements
     const elem = event.target;
     const em_collectionName = elem.getAttribute("em-collectionName");
@@ -79,6 +141,138 @@ function openDeletePopupClickHandler(event) {
 
 
     if (form) {
+        form.setAttribute("em-collectionId", em_collectionId);
+        // Reset the inputs in the form
+        form.reset();
+        const submitButton = form.querySelector(".popup-form-error-button");
+        submitButton.disabled = true;
+        submitButton.classList.add("disabled");
+
+        // Show the form
+        form.style.display = "block";
+
+        // Get the success message div with class "w-form-done"
+        var successDiv = getNextSiblingWithClass(form, "w-form-done");
+        if (successDiv) {
+            successDiv.style.display = "none";
+        }
+
+        // Get the error message div with class "w-form-done"
+        var errorDiv = getNextSiblingWithClass(form, "w-form-fail");
+        if (errorDiv) {
+            errorDiv.style.display = "none";
+        }
+    }
+
+    // finally close the dropdown menu
+    openDropdownClickHandler(event);
+
+}
+
+// attaching listeners to delete collection buttons
+function openDeleteAllVectorsPopupClickHandler(event) {
+    // Set the initial state for all sibling elements
+    const elem = event.target;
+    const em_collectionName = elem.getAttribute("em-collectionName");
+    const em_collectionId = elem.getAttribute("em-collectionId");
+    const deleteModal = document.getElementById("delete-all-vectors-popup");
+    if (posthog.isFeatureEnabled('enable-emEvents')) {
+        posthog.capture('user_clicked_delete_all_vectors', {
+            source: "ui"
+        });
+    }
+
+
+    if (deleteModal) {
+
+        deleteModal.classList.add('add-animation');
+        deleteModal.style.display = "block";
+        deleteModal.style.opacity = "100%";
+    }
+
+    const inputElement = deleteModal.querySelector("#delete-all-vectors-input");
+    if (inputElement) {
+        inputElement.setAttribute("collection-item", em_collectionName);
+        inputElement.setAttribute("em-collectionId", em_collectionId);
+    }
+
+    // Find the text element with id "confirm-text" and replace its text content
+    const confirmText = deleteModal.querySelector("#confirm-text");
+    if (confirmText && em_collectionName) {
+        confirmText.textContent = `Are you sure you want to delete all vectors for "${em_collectionName}"?`;
+    }
+
+
+    const form = deleteModal.querySelector("#wf-form-Delete-All-Vectors");
+
+
+    if (form) {
+        form.setAttribute("em-collectionId", em_collectionId);
+        // Reset the inputs in the form
+        form.reset();
+        const submitButton = form.querySelector(".popup-form-error-button");
+        submitButton.disabled = true;
+        submitButton.classList.add("disabled");
+
+        // Show the form
+        form.style.display = "block";
+
+        // Get the success message div with class "w-form-done"
+        var successDiv = getNextSiblingWithClass(form, "w-form-done");
+        if (successDiv) {
+            successDiv.style.display = "none";
+        }
+
+        // Get the error message div with class "w-form-done"
+        var errorDiv = getNextSiblingWithClass(form, "w-form-fail");
+        if (errorDiv) {
+            errorDiv.style.display = "none";
+        }
+    }
+
+    // finally close the dropdown menu
+    openDropdownClickHandler(event);
+
+}
+
+// attaching listeners to delete collection buttons
+function openDeleteVectorPopupClickHandler(event) {
+    // Set the initial state for all sibling elements
+    const elem = event.target;
+    const em_vectorId = elem.getAttribute("em-vectorId");
+    const deleteModal = document.getElementById("delete-vector-popup");
+    const em_collectionId = getParam('collectionId');
+    if (posthog.isFeatureEnabled('enable-emEvents')) {
+        posthog.capture('user_clicked_delete_vector', {
+            source: "ui"
+        });
+    }
+
+    if (deleteModal) {
+
+        deleteModal.classList.add('add-animation');
+        deleteModal.style.display = "block";
+        deleteModal.style.opacity = "100%";
+    }
+
+    const inputElement = deleteModal.querySelector("#delete-vector-input");
+    if (inputElement) {
+        inputElement.setAttribute("em-vectorId", em_vectorId);
+        inputElement.setAttribute("em-collectionId", em_collectionId);
+    }
+
+    // Find the text element with id "confirm-text" and replace its text content
+    const confirmText = deleteModal.querySelector("#confirm-text");
+    if (confirmText && em_vectorId) {
+        confirmText.textContent = `Are you sure you want to delete "${em_vectorId}"?`;
+    }
+
+
+    const form = deleteModal.querySelector("#wf-form-Delete-Vector");
+
+
+    if (form) {
+        form.setAttribute("em-vectorId", em_vectorId);
         form.setAttribute("em-collectionId", em_collectionId);
         // Reset the inputs in the form
         form.reset();
@@ -166,6 +360,47 @@ function openEditPopupClickHandler(event) {
 
     // finally close the dropdown menu
     openDropdownClickHandler(event);
+
+}
+
+// attaching listeners to edit collection buttons
+function openAddVectorPopupClickHandler(event) {
+    // Set the initial state for all sibling elements
+    const elem = event.target;
+    //const em_collectionId = elem.getAttribute("em-collectionId");
+    const em_collectionId = getParam('collectionId');
+    const addModal = document.getElementById("add-vector-popup");
+    if (posthog.isFeatureEnabled('enable-emEvents')) {
+        posthog.capture('user_clicked_add_vector', {
+            source: "ui"
+        });
+    }
+
+
+    const form = addModal.querySelector("#wf-form-Add-Vector");
+    if (form) {
+        form.setAttribute("em-collectionId", em_collectionId);
+        // Reset the inputs in the form
+        form.reset();
+        // Show the form
+        form.style.display = "block";
+
+        // Get the success message div with class "w-form-done"
+        var successDiv = getNextSiblingWithClass(form, "w-form-done");
+        if (successDiv) {
+            successDiv.style.display = "none";
+        }
+
+        // Get the error message div with class "w-form-done"
+        var errorDiv = getNextSiblingWithClass(form, "w-form-fail");
+        if (errorDiv) {
+            errorDiv.style.display = "none";
+        }
+    }
+
+    addModal.classList.add('add-animation');
+    addModal.style.display = "block";
+    addModal.style.opacity = "100%";
 
 }
 
@@ -266,7 +501,8 @@ Webflow.push(function () {
         console.log(formDataObj);
         debugger;
         const collectionId = $form.attr('em-collectionId');
-        const finalActionURL = formActionURL + '/' + collectionId;
+        const vectorId = $form.attr('em-vectorId');
+        let finalActionURL = formActionURL + '/' + collectionId;
 
         let outsetaJWT = getOutsetaKey();
 
@@ -298,6 +534,41 @@ Webflow.push(function () {
                     formData: finalData
                 });
             }
+        } else if (formId === "wf-form-Delete-All-Vectors") {
+            finalActionURL = finalActionURL + '/vectors/delete';
+            finalData = JSON.stringify({ "ids": [], "deleteAll": true });
+            if (posthog.isFeatureEnabled('enable-emEvents')) {
+                posthog.capture('user_submitted_delete_all_vectors', {
+                    source: "ui",
+                    form: formId,
+                    formData: finalData
+                });
+            }
+        } else if (formId === "wf-form-Delete-Vector") {
+            finalActionURL = finalActionURL + '/vectors/delete';
+            finalData = JSON.stringify({ "ids": [vectorId], "deleteAll": false });
+            if (posthog.isFeatureEnabled('enable-emEvents')) {
+                posthog.capture('user_submitted_delete_vector', {
+                    source: "ui",
+                    form: formId,
+                    formData: finalData
+                });
+            }
+        } else if (formId === "wf-form-Add-Vector") {
+            finalActionURL = finalActionURL + '/vectors/create/text';
+            finalData = JSON.stringify([{
+                "content": formDataObj.vectorText,
+                "metadata": {
+                    "source": "app"
+                }
+            }]);
+            if (posthog.isFeatureEnabled('enable-emEvents')) {
+                posthog.capture('user_submitted_add_vector', {
+                    source: "ui",
+                    form: formId,
+                    formData: finalData
+                });
+            }
         } else {
             if (posthog.isFeatureEnabled('enable-emEvents')) {
                 posthog.capture('user_submitted_edit_collection', {
@@ -322,9 +593,42 @@ Webflow.push(function () {
                     .siblings('.w-form-done').show() // Show success
                     .siblings('.w-form-fail').hide(); // Hide failure
 
+                const $doneMessage = $form.siblings('.w-form-done').find('#tiny-createdVector');
+                const count = res.length;
+
+                if (count === 1) {
+                    $doneMessage.text(`1 vector is created for your text.`);
+                } else {
+                    $doneMessage.text(`${count} vectors are created for your text.`);
+                }
+
                 if (formId === "wf-form-Delete-Collection") {
                     if (posthog.isFeatureEnabled('enable-emEvents')) {
                         posthog.capture('user_deleted_collection', {
+                            source: "ui",
+                            form: formId,
+                            formData: finalData
+                        });
+                    }
+                } else if (formId === "wf-form-Delete-All-Vectors") {
+                    if (posthog.isFeatureEnabled('enable-emEvents')) {
+                        posthog.capture('user_deleted_all_vectors', {
+                            source: "ui",
+                            form: formId,
+                            formData: finalData
+                        });
+                    }
+                } else if (formId === "wf-form-Delete-Vector") {
+                    if (posthog.isFeatureEnabled('enable-emEvents')) {
+                        posthog.capture('user_deleted_vector', {
+                            source: "ui",
+                            form: formId,
+                            formData: finalData
+                        });
+                    }
+                } else if (formId === "wf-form-Add-Vector") {
+                    if (posthog.isFeatureEnabled('enable-emEvents')) {
+                        posthog.capture('user_added_vector', {
                             source: "ui",
                             form: formId,
                             formData: finalData
@@ -447,7 +751,7 @@ async function reloadData() {
         // If it has the class, show the contentSectionDiv div and hide the contentTableDiv
         contentTableDiv.style.display = "none";
         contentSectionDiv.style.display = "none";
-        spinner.style.display = "flex";
+        spinner.style.display = "none";
 
     }
 
@@ -489,9 +793,9 @@ async function reloadData() {
         // connect the dropdownHandlers
         const deleteCollectionMenu = emCollCard.find(".delete-coll-button");
         // Remove any existing click event listeners before attaching a new one
-        deleteCollectionMenu.off("click", openDeletePopupClickHandler);
+        deleteCollectionMenu.off("click", openDeleteCollectionPopupClickHandler);
         // Attach the click event listener
-        deleteCollectionMenu.on("click", openDeletePopupClickHandler);
+        deleteCollectionMenu.on("click", openDeleteCollectionPopupClickHandler);
 
         const editCollectionMenu = emCollCard.find(".edit-coll-button");
         // Remove any existing click event listeners before attaching a new one
@@ -526,7 +830,7 @@ async function reloadData() {
 
 
         const deleteVectorMenu = clonedElement.find(".delete-vector-button");
-        deleteVectorMenu.on("click", openDeletePopupClickHandler);
+        deleteVectorMenu.on("click", openDeleteVectorPopupClickHandler);
 
         const dropdownTrigger = clonedElement.find(".dropdown-trigger");
         dropdownTrigger.on("click", openDropdownClickHandler);
@@ -566,7 +870,7 @@ async function reloadData() {
             }
 
             clonedElement.attr('em-vectorId', em_vec.id);
-            clonedElement.find(".action-link").attr('em-vectorId', em_coll.id);
+            clonedElement.find(".action-link").attr('em-vectorId', em_vec.id);
 
             // also append the description if it the edit button.
             //clonedElement.find('.action-link.edit-coll-button').attr('em-collectionDescription', em_coll.description);
@@ -584,8 +888,9 @@ async function reloadData() {
         tableWrapper.style.display = "none";
     }
 
-    // attaching listeners to add key buttons
-    $(".add-collection-btn").on("click", addClickHandler);
+
+    $(".add-vector-btn").off("click", openAddVectorPopupClickHandler);// Remove any existing click event listeners before attaching a new one
+    $(".add-vector-btn").on("click", openAddVectorPopupClickHandler);// Attach the click event listener
 
     // // remove loader and show movie grid
     setTimeout(() => {
